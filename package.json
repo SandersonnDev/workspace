@@ -1,0 +1,14 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Sandersonn",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^39.2.4"
+  }
+}
