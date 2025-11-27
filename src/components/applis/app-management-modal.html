@@ -1,0 +1,50 @@
+<!-- Modal Gestion des Applications -->
+<div id="app-management-modal" class="universal-modal" data-modal-id="app-management-modal">
+    <!-- Modal Overlay -->
+    <div class="modal-overlay"></div>
+    
+    <!-- Modal Content -->
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2>Gestion des Applications</h2>
+                <button class="modal-close" data-modal-close="app-management-modal">✕</button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Tabs -->
+                <div class="modal-tabs">
+                    <button class="modal-tab-button active" data-tab="add-app">Ajouter une app</button>
+                    <button class="modal-tab-button" data-tab="manage-app">Mes applications</button>
+                </div>
+                
+                <!-- Add App Tab -->
+                <div class="modal-tab-content active" data-tab="add-app">
+                    <div class="search-apps">
+                        <input type="text" id="app-search" placeholder="Rechercher une application..." class="app-search-input" />
+                    </div>
+                    
+                    <div id="available-apps-list" class="available-apps-list">
+                        <!-- Applications disponibles seront ajoutées ici -->
+                    </div>
+                </div>
+                
+                <!-- Manage App Tab -->
+                <div class="modal-tab-content" data-tab="manage-app">
+                    <div id="added-apps-list" class="added-apps-list">
+                        <!-- Mes applications seront affichées ici -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" data-modal-close="app-management-modal">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

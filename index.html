@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace La Capsule</title>
+    
+    <!-- Global Styles -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 30px 40px;
+        }
+    </style>
+
+    <!-- Components CSS -->
+    <link rel="stylesheet" href="src/components/navbar/navbar.css" />
+    <link rel="stylesheet" href="src/components/welcome/welcome.css" />
+    <link rel="stylesheet" href="src/components/tabs.css" />
+    <link rel="stylesheet" href="src/components/favoris/favoris.css" />
+    <link rel="stylesheet" href="src/components/applis/applis.css" />
+    <link rel="stylesheet" href="src/components/dossiers/dossiers.css" />
+    <link rel="stylesheet" href="src/components/reception/reception.css" />
+    <link rel="stylesheet" href="src/components/applis/app-management-modal.css" />
+</head>
+
+<body>
+    <!-- Navbar Component -->
+    <div id="navbar-root"></div>
+
+    <!-- Welcome Component -->
+    <div id="welcome-root"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div id="tabs-root"></div>
+    </main>
+
+    <!-- Component Scripts -->
+    <script src="src/components/navbar/navbar.js"></script>
+    <script src="src/components/welcome/welcome.js"></script>
+    <script src="src/components/applis/universal-modal.js"></script>
+    <script src="src/components/applis/app-management-modal.js"></script>
+    <script src="src/components/dossiers/folder-management-modal.js"></script>
+    <script src="src/components/tabs.js"></script>
+    <script src="src/components/favoris/favoris.js"></script>
+    <script src="src/components/applis/applis.js"></script>
+    <script src="src/components/dossiers/dossiers.js"></script>
+    <script src="src/components/reception/reception.js"></script>
+
+    <!-- Main App Script -->
+    <script src="script.js"></script>
+</body>
+
+</html>

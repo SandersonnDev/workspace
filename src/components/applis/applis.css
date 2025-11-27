@@ -1,0 +1,154 @@
+/* Applis Section */
+.applis-content {
+    width: 100%;
+}
+
+.applis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.applis-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 22px;
+}
+
+.manage-apps-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.manage-apps-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.manage-apps-btn:active {
+    transform: translateY(0);
+}
+
+/* Items Grid */
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
+}
+
+/* App Item Styles */
+.app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    min-height: 150px;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.app-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.app-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.app-name {
+    font-size: 13px;
+    text-align: center;
+    color: #fff;
+    font-weight: 500;
+}
+
+.add-favorite {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 14px;
+    display: none;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.app-item:hover .add-favorite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.add-favorite:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.add-favorite.active {
+    background-color: #f39c12;
+    border-color: #f39c12;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 15px;
+    }
+
+    .app-item {
+        padding: 15px;
+        min-height: 130px;
+    }
+}
+
+@media (max-width: 480px) {
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 12px;
+    }
+
+    .app-item {
+        padding: 12px;
+        min-height: 110px;
+    }
+
+    .app-icon {
+        font-size: 36px;
+        margin-bottom: 8px;
+    }
+
+    .app-name {
+        font-size: 11px;
+    }
+}
