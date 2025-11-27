@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron/main')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron/main')
+const { shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 
@@ -50,14 +51,18 @@ ipcMain.handle('select-folder', async () => {
 
 // IPC pour ouvrir un fichier ou dossier
 ipcMain.handle('open-path', async (event, filePath) => {
+  console.log('open-path handler called with:', filePath)
   try {
-    await shell.openPath(filePath)
+    const result = await shell.openPath(filePath)
+    console.log('shell.openPath result:', result)
     return true
   } catch (error) {
     console.error('Erreur lors de l\'ouverture:', error)
     return false
   }
 })
+
+console.log('All IPC handlers registered')
 
 // IPC pour récupérer l'icône d'un fichier
 ipcMain.handle('get-file-icon', async (event, filePath) => {
