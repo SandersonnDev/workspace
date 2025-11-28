@@ -1,7 +1,6 @@
 {
   "name": "workspace",
   "version": "1.0.0",
-  "description": "",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
@@ -10,5 +9,14 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^39.2.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SandersonnDev/workspace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SandersonnDev/workspace/issues"
+  },
+  "homepage": "https://github.com/SandersonnDev/workspace#readme",
+  "description": ""
 }

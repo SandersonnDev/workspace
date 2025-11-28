@@ -1,0 +1,10 @@
+@import url(./default/variables.css);
+@import url(./default/normalize.css);
+
+/* ----------CSS DES PAGES----------- */
+@import url(./modules/agenda.css);
+@import url(./modules/appli.css);
+@import url(./modules/dossier.css);
+@import url(./modules/home.css);
+@import url(./modules/option.css);
+@import url(./modules/reception.css);
