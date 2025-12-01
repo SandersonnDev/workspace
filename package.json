@@ -2,21 +2,62 @@
   "name": "workspace",
   "version": "1.0.0",
   "main": "main.js",
-  "scripts": {
-    "start": "electron ."
-  },
+  "homepage": "https://github.com/SandersonnDev/workspace#readme",
+  "description": "",
   "author": "Sandersonn",
   "license": "MIT",
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-brands-svg-icons": "^7.1.0",
+    "@fortawesome/free-regular-svg-icons": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.1",
+    "react": "^18.0.0"
+  },
   "devDependencies": {
-    "electron": "^39.2.4"
+    "electron": "latest",
+    "electron-builder": "latest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SandersonnDev/workspace.git"
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
   },
-  "bugs": {
-    "url": "https://github.com/SandersonnDev/workspace/issues"
-  },
-  "homepage": "https://github.com/SandersonnDev/workspace#readme",
-  "description": ""
+  "build": {
+    "appId": "com.example.app",
+    "productName": "Mon App",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "app.js",
+      "public/**/*",
+      "style.css"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/SandersonnDev/workspace.git"
+    },
+    "bugs": {
+      "url": "https://github.com/SandersonnDev/workspace/issues"
+    }
+  }
 }
