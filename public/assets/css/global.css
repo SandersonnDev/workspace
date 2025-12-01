@@ -1,7 +1,9 @@
 @import url(./default/variables.css);
 @import url(./default/normalize.css);
-
-/* ----------CSS DES PAGES----------- */
+/* ----------CSS COMPONENTS----------- */
+@import url(./components/header.css);
+@import url(./components/footer.css);
+/* ----------CSS PAGES----------- */
 @import url(./modules/agenda.css);
 @import url(./modules/appli.css);
 @import url(./modules/dossier.css);

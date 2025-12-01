@@ -1,0 +1,92 @@
+menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(8px) calc(8px*2);
+    background-color: var(--background-color);
+    box-shadow: var(--shadow);
+}
+
+.nav-logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: calc(8*2px);
+
+    & h1 {
+        font: var(--font-title);
+        color: var(--title);
+        margin: 0;
+    }
+
+    & .logo {
+        height: calc(8px*5);
+        width: calc(8px*5);
+    }
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: calc(8px*2);
+}
+
+.nav-icon {
+    height: calc(8px*3);
+    width: calc(8px*3);
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--blanc);
+    transition: var(--transition);
+    gap: calc(8px);
+
+    & i {
+        transition: var(--transition);
+    }
+}
+
+.nav-btn:hover {
+    cursor: pointer;
+    color: var(--primary-color);
+
+}
+
+.nav-btn-option {
+    background: none;
+    border: none;
+}
+
+/* Animation au hover des i*/
+.nav-option:hover i {
+    animation: fa-spin 2s infinite linear;
+}
+.nav-reception:hover i {
+    animation: fa-beat 2s infinite ease-in-out;
+}
+
+@keyframes fa-beat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
