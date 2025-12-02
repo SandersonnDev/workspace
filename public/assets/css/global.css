@@ -1,8 +1,11 @@
 @import url(./default/variables.css);
 @import url(./default/normalize.css);
+@import url(./default/section.css);
+
 /* ----------CSS COMPONENTS----------- */
 @import url(./components/header.css);
 @import url(./components/footer.css);
+
 /* ----------CSS PAGES----------- */
 @import url(./modules/agenda.css);
 @import url(./modules/appli.css);
@@ -10,3 +13,6 @@
 @import url(./modules/home.css);
 @import url(./modules/option.css);
 @import url(./modules/reception.css);
+
+/* ----------CSS MODULES----------- */
+@import url(./modules/chat.css);

@@ -6,7 +6,8 @@ Après avoir cloné le repository, exécutez ces commandes pour réinstaller tou
 
 ### Installation complète
 ```bash
-npm install
+sudo apt update
+sudo apt install npm
 ```
 
 ### Ou installer individuellement les packages clés :

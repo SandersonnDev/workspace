@@ -8,30 +8,12 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
     <title>Workspace By Sandersonn</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com;">
 </head>
 
 <body>
     <!-- HEADER -->
-    <header id="header">
-        <menu>
-            <div class="nav-logo">
-                <img class="logo" src="./public/src/icons/logo.svg" alt="" class="logo">
-                <h1>Workspace 1.0</h1>
-            </div>
-            <nav class="nav-links">
-                <!-- Boutons de navigation avec data-page -->
-                <button class="nav-btn" data-page="home"><i class="fas fa-home"></i> Accueil</button>
-                <button class="nav-btn" data-page="shortcut"><i class="fas fa-home"></i> Mes raccourcis</button>        
-                <button class="nav-btn" data-page="agenda"><i class="fas fa-calendar-alt"></i> Agenda</button>
-                <button class="nav-btn" data-page="dossier"><i class="fas fa-folder"></i> Dossier</button>
-                <button class="nav-btn" data-page="application"><i class="fas fa-cube"></i> Application</button>
-                <button class="nav-btn nav-reception" data-page="reception"><i class="fas fa-bell"></i> Réception</button>
-                <div class="nav-action">
-                    <button class="nav-btn nav-option" data-page="option"><i class="fa-solid fa-gear"></i></button>
-                </div>
-            </nav>
-        </menu>
-    </header>
+    <header id="header"></header>
 
     <!-- CONTENU PRINCIPAL (où les pages se chargeront) -->
     <main id="content">
@@ -39,10 +21,9 @@
     </main>
 
     <!-- FOOTER -->
-    <footer id="footer">
-        <p>&copy; 2025 - Workspace V1.0 - By Sandersonn</p>
-    </footer>
+    <footer id="footer"></footer>
 
     <!-- SCRIPT PRINCIPAL -->
+    <script type="module" src="./public/assets/js/global.js"></script>
     <script src="./app.js"></script>
 </body>

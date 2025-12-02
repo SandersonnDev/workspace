@@ -1,5 +1,5 @@
 // Importer les modules Electron
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -61,6 +61,17 @@ app.on('activate', () => {
     if (mainWindow === null) {
         createWindow();
     }
+});
+
+/**
+ * IPC : Ouvrir une URL externe dans le navigateur par défaut
+ * Appelé par : window.electron.openExternal(url)
+ */
+ipcMain.on('open-external', (event, url) => {
+    console.log(`🌐 Ouverture de l'URL externe: ${url}`);
+    shell.openExternal(url).catch(error => {
+        console.error('❌ Erreur ouverture URL:', error);
+    });
 });
 
 console.log('🚀 Electron démarré');

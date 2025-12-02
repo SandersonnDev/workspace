@@ -11,8 +11,22 @@ class PageManager {
     constructor() {
         // Configuration
         this.contentContainer = 'content';
-        this.pages = ['home', 'agenda', 'dossier'];
-        this.fullPageLayout = ['login', 'signup'];
+        
+        // Pages et leur configuration de layout
+        this.pagesConfig = {
+            // Pages normales (avec header et footer)
+            'home': { showHeader: true, showFooter: true },
+            'agenda': { showHeader: true, showFooter: true },
+            'dossier': { showHeader: true, showFooter: true },
+            'application': { showHeader: true, showFooter: true },
+            'reception': { showHeader: true, showFooter: true },
+            'shortcut': { showHeader: true, showFooter: true },
+            'option': { showHeader: true, showFooter: true },
+            
+            // Pages full-screen (sans header ni footer)
+            'login': { showHeader: false, showFooter: false },
+            'signup': { showHeader: false, showFooter: false },
+        };
         
         // Initialiser au démarrage
         this.init();
@@ -22,13 +36,47 @@ class PageManager {
      * Initialisation
      */
     init() {
-        console.log('🚀 Application démarrée');
+        console.log('🚀 Workspace 1.0 démarrée');
+        
+        // Charger le header et footer
+        this.loadHeader();
+        this.loadFooter();
         
         // Charger la page par défaut
         this.loadPage('home');
-        
-        // Attacher les écouteurs d'événements
-        this.attachListeners();
+    }
+
+    /**
+     * Charger le header
+     */
+    async loadHeader() {
+        try {
+            const response = await fetch('./public/components/header.html');
+            if (!response.ok) throw new Error('Header not found');
+            const html = await response.text();
+            document.getElementById('header').innerHTML = html;
+            
+            // Réattacher les écouteurs après chargement du header
+            this.attachListeners();
+            console.log('✅ Header chargé et écouteurs attachés');
+        } catch (error) {
+            console.error('❌ Erreur chargement header:', error);
+        }
+    }
+
+    /**
+     * Charger le footer
+     */
+    async loadFooter() {
+        try {
+            const response = await fetch('./public/components/footer.html');
+            if (!response.ok) throw new Error('Footer not found');
+            const html = await response.text();
+            document.getElementById('footer').innerHTML = html;
+            console.log('✅ Footer chargé');
+        } catch (error) {
+            console.error('❌ Erreur chargement footer:', error);
+        }
     }
 
     /**
@@ -59,10 +107,86 @@ class PageManager {
             // Mettre à jour l'affichage
             this.updateLayout(pageName);
             
+            // Réinitialiser le ChatManager si les éléments chat existent
+            this.initializeChatIfNeeded();
+            
+            // Réinitialiser TimeManager si les éléments time existent
+            this.initializeTimeIfNeeded();
+            
             console.log(`✅ Page chargée : ${pageName}`);
         } catch (error) {
             console.error(`❌ Erreur lors du chargement de ${pageName}:`, error);
             this.showError(pageName);
+        }
+    }
+
+    /**
+     * Initialiser le TimeManager si les éléments existent
+     */
+    initializeTimeIfNeeded() {
+        const timeElement = document.getElementById('current-time');
+        const dateElement = document.getElementById('current-date');
+        
+        if (timeElement && dateElement) {
+            // Arrêter l'ancien TimeManager s'il existe
+            if (window.timeManager) {
+                console.log('♻️ Réinitialisation TimeManager');
+            }
+            
+            // Charger et créer une nouvelle instance
+            import('./public/assets/js/modules/TimeManager.js')
+                .then(module => {
+                    const TimeManager = module.default;
+                    window.timeManager = new TimeManager({
+                        dateElementId: 'current-date',
+                        timeElementId: 'current-time',
+                        updateInterval: 1000
+                    });
+                    console.log('✅ TimeManager réinitialisé');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur import TimeManager:', error);
+                });
+        }
+    }
+
+    /**
+     * Initialiser le ChatManager si les éléments existent
+     */
+    initializeChatIfNeeded() {
+        const chatMessagesContainer = document.getElementById('chat-messages');
+        
+        if (chatMessagesContainer) {
+            // Détruire l'ancien ChatManager s'il existe
+            if (window.chatManager) {
+                console.log('♻️ Réinitialisation ChatManager');
+            }
+            
+            // Créer une nouvelle instance avec config de sécurité
+            Promise.all([
+                import('./public/assets/js/modules/ChatManager.js'),
+                import('./public/assets/js/config/ChatSecurityConfig.js')
+            ]).then(([chatModule, configModule]) => {
+                const ChatManager = chatModule.default;
+                const securityConfig = configModule.default;
+                
+                window.chatManager = new ChatManager({
+                    messagesContainerId: 'chat-messages',
+                    inputId: 'chat-input',
+                    sendButtonId: 'chat-send',
+                    pseudoInputId: 'chat-pseudo-input',
+                    pseudoConfirmId: 'chat-pseudo-confirm',
+                    pseudoDisplayId: 'chat-pseudo-display',
+                    pseudoErrorId: 'chat-pseudo-error',
+                    clearChatBtnId: 'chat-clear-btn',
+                    pseudoWrapperId: 'chat-pseudo-input-wrapper',
+                    // Passer la configuration de sécurité
+                    securityConfig: securityConfig
+                });
+                console.log('✅ ChatManager réinitialisé');
+            }).catch(error => {
+                console.error('❌ Erreur import ChatManager:', error);
+            });
         }
     }
 
@@ -74,20 +198,23 @@ class PageManager {
         const header = document.getElementById('header');
         const footer = document.getElementById('footer');
         
-        // Vérifier si c'est une page "full"
-        const isFullPage = this.fullPageLayout.includes(pageName);
+        // Récupérer la configuration de la page
+        const config = this.pagesConfig[pageName];
         
-        if (isFullPage) {
-            // Masquer header/footer
-            header.style.display = 'none';
-            footer.style.display = 'none';
-            console.log('🔒 Layout full (header/footer masqués)');
-        } else {
-            // Afficher header/footer
-            header.style.display = 'block';
-            footer.style.display = 'block';
-            console.log('📱 Layout normal (header/footer visibles)');
+        if (!config) {
+            console.warn(`⚠️ Configuration manquante pour : ${pageName}`);
+            return;
         }
+        
+        // Fermer le menu burger si ouvert
+        window.navManager?.closeMenu();
+        
+        // Appliquer la configuration
+        header.style.display = config.showHeader ? 'block' : 'none';
+        footer.style.display = config.showFooter ? 'block' : 'none';
+        
+        const layoutType = config.showHeader ? '📱 Normal' : '🔒 Full-screen';
+        console.log(`${layoutType} (header: ${config.showHeader}, footer: ${config.showFooter})`);
     }
 
     /**
