@@ -14,38 +14,30 @@
             <!-- Section Chat -->
             <div class="tempchat">
                 <h3>Chat en temps réel</h3>
-
-                <!-- Zone de saisie du pseudo -->
+                <span class="split"></span>
+            <!-- Zone de saisie du pseudo -->
                 <div class="chat-pseudo-area">
                     <div id="chat-pseudo-display"></div>
                     <div id="chat-pseudo-input-wrapper" class="chat-pseudo-input-wrapper">
-                        <input 
-                            type="text" 
-                            id="chat-pseudo-input" 
-                            placeholder="Votre pseudo (2-20 caractères)..." 
-                            autocomplete="off"
-                            maxlength="20"
-                            aria-label="Saisir votre pseudo"
-                        >
-                        <button type="button" id="chat-pseudo-confirm" aria-label="Confirmer le pseudo"><i class="fas fa-check"></i> Confirmer</button>
+                        <input type="text" id="chat-pseudo-input" placeholder="Votre pseudo (2-20 caractères)..."
+                            autocomplete="off" maxlength="20" aria-label="Saisir votre pseudo">
+                        <button type="button" id="chat-pseudo-confirm" aria-label="Confirmer le pseudo"><i
+                                class="fas fa-check"></i> Confirmer</button>
                     </div>
                     <div id="chat-pseudo-error" role="alert" aria-live="polite"></div>
                 </div>
 
                 <!-- Conteneur de chat -->
                 <div class="chat-container">
-                    <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Zone d'affichage des messages"></div>
+                    <div id="chat-messages" class="chat-messages" aria-live="polite"
+                        aria-label="Zone d'affichage des messages"></div>
                     <div class="chat-input-container">
-                        <input 
-                            type="text" 
-                            id="chat-input" 
-                            placeholder="Votre message..." 
-                            autocomplete="off"
-                            maxlength="500"
-                            aria-label="Saisir un message"
-                        >
-                        <button type="button" id="chat-send" aria-label="Envoyer le message"><i class="fas fa-paper-plane"></i></button>
-                        <button type="button" id="chat-clear-btn" aria-label="Effacer l'historique du chat"><i class="fas fa-trash-alt"></i></button>
+                        <input type="text" id="chat-input" placeholder="Votre message..." autocomplete="off"
+                            maxlength="500" aria-label="Saisir un message">
+                        <button type="button" id="chat-send" aria-label="Envoyer le message"><i
+                                class="fas fa-paper-plane"></i></button>
+                        <button type="button" id="chat-clear-btn" aria-label="Effacer l'historique du chat"><i
+                                class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
             </div>
@@ -53,7 +45,8 @@
         <div class="right-contain">
             <div class="today-calendar"></div>
             <div class="feedback">
-                <a href="#" role="button" aria-label="Faire un retour">Faire un retour <i class="fa-regular fa-comment"></i></a>
+                <a href="#" role="button" aria-label="Faire un retour">Faire un retour <i
+                        class="fa-regular fa-comment"></i></a>
             </div>
         </div>
     </div>

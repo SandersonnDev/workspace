@@ -1,8 +1,19 @@
 .section {
     padding: var(--unit-2) var(--unit-6);
+
+     & .split {
+        display: block;
+        background-color: var(--orange);
+        height: calc(var(--unit-1)/4);
+        width: auto;
+        border-radius: var(--unit-1);
+    }
 }
 
 .section-title {
+    display: flex;
+    flex-direction: column;
+
     & h2 {
         font: var(--font-subtitle);
         color: var(--h2);
@@ -12,25 +23,21 @@
         font: var(--font-text);
         color: var(--text2);
     }
-
-    & .split {
-        display: block;
-        background-color: var(--orange);
-        height: calc(var(--unit-1)/4);
-        border-radius: var(--unit-1);
-        margin-bottom: var(--unit-4);
-    }
 }
-.section-contain{
+
+.section-contain {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    height: auto;
     padding: var(--unit-2);
     gap: var(--unit-2);
+
 }
+
 /* ========== RESPONSIVE MOBILE ========== */
 @media (max-width: 980px) {
-    .section-contain{
+    .section-contain {
         flex-direction: column;
         align-items: center;
         padding: 0;
