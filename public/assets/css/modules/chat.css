@@ -6,18 +6,17 @@
     flex-direction: column;
     max-width: 90%;
     min-width: 90%;
-    max-height: 500px;
+    min-height: 10vh;
     gap: var(--unit-2);
-    background-color: var(--bleu1);
+    background-color: none;
     border-radius: var(--radius-medium);
-    box-shadow: var(--shadow-medium);
     padding: var(--unit-2);
 }
 
 .tempchat h3 {
     margin: 0;
-    color: var(--text);
-    font-size: 1.2rem;
+    color: var(--text2);
+    font: var(--font-text);
 }
 
 /* ========== PSEUDO INPUT AREA ========== */
@@ -65,17 +64,15 @@
     gap: var(--unit-1);
     width: 100%;
     flex-wrap: wrap;
-    padding: var(--unit-1);
-    background-color: #f9f9f9;
     border-radius: var(--radius-small);
-    border: 1px solid #e0e0e0;
+    border: none;
 }
 
 #chat-pseudo-input {
     flex: 1;
     min-width: 200px;
     padding: var(--unit-1) var(--unit-2);
-    border: 2px solid #ddd;
+    border: 2px solid var(--bleu1);
     border-radius: var(--radius-small);
     font-size: 0.95rem;
     font-family: inherit;
@@ -170,8 +167,9 @@
     background-color: var(--blanc);
     border-radius: var(--radius-medium);
     overflow: hidden;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--bleu1);
     min-height: 300px;
+    max-height: calc(var(--unit-5)*10);
 }
 
 #chat-messages {
@@ -323,13 +321,13 @@
     gap: var(--unit-1);
     padding: var(--unit-2);
     background-color: var(--blanc);
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--bleu1);
 }
 
 #chat-input {
     flex: 1;
     padding: var(--unit-1) var(--unit-2);
-    border: 1px solid #ddd;
+    border: 1px solid var(--bleu1);
     border-radius: var(--radius-small);
     font-size: 0.95rem;
     font-family: inherit;
