@@ -1,0 +1,55 @@
+
+> workspace-v2@2.0.0 dev
+> concurrently "npm run dev --workspace=apps/server" "npm run dev --workspace=apps/client"
+
+[1] 
+[1] > workspace-client@1.0.0 dev
+[1] > electron-forge start
+[1] 
+[0] 
+[0] > workspace-server@2.0.0 dev
+[0] > concurrently "tsc --watch" "electron ."
+[0] 
+[1] ❯ Checking your system
+[1] ❯ Checking package manager version
+[1] ✔ Found npm@9.2.0
+[1] ✔ Checking your system
+[?25h[0] [2J[3J[H✅ Répertoire logs créé: /home/goupil/.config/workspace-server/logs
+[1] ❯ Locating application
+[0] [0] 14:29:20 - Starting compilation in watch mode...
+[0] [0] 
+[1] ✔ Locating application
+[1] ❯ Loading configuration
+[1] ✔ Loading configuration
+[1] ❯ Preparing native dependencies
+[0] [1] [32m[2026-01-05T13:29:21.054Z] [INFO][0m 💻 Interface graphique chargée (serveur backend en attente de démarrage)
+[1] ✔ Preparing native dependencies
+[1] ❯ Running generateAssets hook
+[1] ✔ Running generateAssets hook
+[1] ❯ Running preStart hook
+[1] ✔ Running preStart hook
+[1] ✔ Launched Electron app. Type rs in terminal to restart main process.
+[1] [?25h
+[1] ✅ Configuration serveur chargée: local
+[1] 🚀 Démarrage Workspace Client...
+[1] 📍 Serveur attendu: http://localhost:8060
+[0] [1] (electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+[0] [0] 
+[0] [0] 14:29:25 - Found 0 errors. Watching for file changes.
+[1] ⚠️  Impossible de se connecter au serveur: http://localhost:8060
+[1] 🔌 Mode hors-ligne: Le client démarre sans connexion serveur
+[1] ✅ Interface graphique lancée
+[1] ✨ Application prête
+[1] (electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+[1] ✅ Icône trouvée: /usr/share/pixmaps/vscode.png
+[1] ✅ Icône trouvée: /usr/share/icons/hicolor/256x256/apps/org.remmina.Remmina.png
+[1] ⚠️ Icône non trouvée pour: gnome-terminal avec appName: Terminal
+[1] ✅ Icône trouvée: /usr/share/icons/Papirus/64x64/apps/io.github.shiftey.Desktop.svg
+[0] [1] [32m[2026-01-05T13:30:06.036Z] [INFO][0m ⏹️  ARRÊT DE L'APPLICATION
+[0] [1] [32m[2026-01-05T13:30:06.037Z] [INFO][0m 🚪 Poste déconnecté du serveur (http://localhost:8060)
+[0] [1] [32m[2026-01-05T13:30:06.037Z] [INFO][0m 🔌 Fermeture de WebSocket sur ws://localhost:8060
+[0] [1] [32m[2026-01-05T13:30:06.038Z] [INFO][0m ✅ APPLICATION ARRÊTÉE - Fin de session
+[0] [1] [32m[2026-01-05T13:30:06.038Z] [INFO][0m ============================================================
+[0] [1] electron . exited with code 0
+[1] ⏹️  Arrêt de Workspace Client
+[1] npm run dev --workspace=apps/client exited with code SIGTERM
