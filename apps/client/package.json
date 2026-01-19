@@ -4,7 +4,10 @@
   "main": "main.js",
   "homepage": "https://github.com/SandersonnDev/workspace#readme",
   "description": "Workspace Client - Interface utilisateur collaborative",
-  "author": "Sandersonn",
+  "author": {
+    "name": "Sandersonn",
+    "email": "contact@sandersonn.dev"
+  },
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
@@ -25,13 +28,15 @@
     "build:win": "electron-forge make --platform win32",
     "build:mac": "electron-forge make --platform darwin",
     "build:linux": "electron-builder --linux",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch --passWithNoTests",
     "lint": "eslint . --ext .js"
   },
   "build": {
     "appId": "com.workspace.client",
     "productName": "Workspace Client",
+    "electronVersion": "39.2.4",
+    "icon": "public/src/icons/logo.svg",
     "publish": {
       "provider": "github",
       "owner": "SandersonnDev",
@@ -57,13 +62,20 @@
     },
     "linux": {
       "target": [
-        "AppImage"
-      ]
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/src/icons/logo.svg",
+      "category": "Utility"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SandersonnDev/workspace.git"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
   },
   "bugs": {
     "url": "https://github.com/SandersonnDev/workspace/issues"

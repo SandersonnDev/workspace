@@ -4,6 +4,13 @@ import helmet from '@fastify/helmet';
 import websocket from '@fastify/websocket';
 import dotenv from 'dotenv';
 import { getConfig } from '../../../config/network.config';
+import { registerMonitoringRoutes, incrementMessageCount } from './api/monitoring';
+import { registerCompression } from './middleware/compression';
+import { registerRateLimit } from './middleware/rate-limit';
+import { registerMonitoring } from './middleware/monitoring';
+import { globalMetrics } from './utils/metrics';
+import { globalCache } from './utils/cache';
+import { testConnection, initializeDatabase } from './db';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +52,21 @@ const messageStartTime = Date.now();
 // Register plugins
 (async () => {
   try {
+    // Initialize database connection
+    console.log('🔄 Connecting to PostgreSQL...');
+    const dbConnected = await testConnection();
+    if (!dbConnected) {
+      throw new Error('Failed to connect to database');
+    }
+
+    // Initialize database schema
+    await initializeDatabase();
+
+    // Phase 5: Performance optimization middlewares
+    await registerCompression(fastify);
+    await registerRateLimit(fastify);
+    await registerMonitoring(fastify);
+
     // Security
     await fastify.register(helmet, {
       contentSecurityPolicy: false
@@ -59,21 +81,47 @@ const messageStartTime = Date.now();
     // WebSocket
     await fastify.register(websocket);
 
+    // Register monitoring routes
+    await registerMonitoringRoutes(fastify, connectedUsers);
+
     // Health check endpoint
     fastify.get('/api/health', async (request: FastifyRequest, reply: FastifyReply) => {
+      const cacheStats = globalCache.stats();
+      
       return {
         status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         environment: nodeEnv,
-        version: '2.0.0'
+        version: '2.0.0',
+        cache: {
+          size: cacheStats.size,
+          maxSize: cacheStats.maxSize,
+        },
+        memory: {
+          heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        },
+      };
+    });
+
+    // Metrics endpoint (Phase 5)
+    fastify.get('/api/metrics', async (request: FastifyRequest, reply: FastifyReply) => {
+      const metrics = globalMetrics.getMetrics();
+      const cacheStats = globalCache.stats();
+      
+      return {
+        ...metrics,
+        cache: cacheStats,
+        memory: process.memoryUsage(),
+        timestamp: new Date().toISOString(),
       };
     });
 
     // Auth routes
     fastify.post('/api/auth/login', async (request: FastifyRequest, reply: FastifyReply) => {
       const { username, password } = request.body as { username: string; password: string };
-      
+
       if (!username || !password) {
         reply.statusCode = 400;
         return { error: 'Username and password required' };
@@ -184,6 +232,7 @@ const messageStartTime = Date.now();
       }
 
       messageCount++;
+      incrementMessageCount();
       const message = {
         id: `msg_${Date.now()}`,
         userId,
@@ -276,27 +325,6 @@ const messageStartTime = Date.now();
       };
     });
 
-    // Monitoring stats
-    fastify.get('/api/monitoring/stats', async (request: FastifyRequest, reply: FastifyReply) => {
-      const uptime = process.uptime();
-      const memUsage = process.memoryUsage();
-      const messagesPerMinute = (messageCount / (uptime / 60)).toFixed(2);
-
-      return {
-        success: true,
-        stats: {
-          connectedUsers: connectedUsers.size,
-          messagesPerMinute: parseFloat(messagesPerMinute as any),
-          memoryUsage: {
-            rss: (memUsage.rss / 1024 / 1024).toFixed(2) + ' MB',
-            heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2) + ' MB',
-            heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2) + ' MB'
-          },
-          uptime: (uptime / 60).toFixed(2) + ' minutes'
-        }
-      };
-    });
-
     // WebSocket routes
     fastify.register(async (fastify: any) => {
       fastify.get('/ws', { websocket: true }, (socket: any, request: any) => {
@@ -346,69 +374,70 @@ const messageStartTime = Date.now();
             const message = JSON.parse(data.toString());
 
             switch (message.type) {
-              case 'message:send':
-                messageCount++;
-                // Broadcast to all users
-                for (const user of connectedUsers.values()) {
+            case 'message:send':
+              messageCount++;
+              incrementMessageCount();
+              // Broadcast to all users
+              for (const user of connectedUsers.values()) {
+                try {
+                  user.socket.send(JSON.stringify({
+                    type: 'message:new',
+                    data: {
+                      id: `msg_${Date.now()}`,
+                      userId,
+                      username,
+                      text: message.text,
+                      createdAt: new Date().toISOString()
+                    }
+                  }));
+                } catch (e) {
+                  // Socket might be closed
+                }
+              }
+              break;
+
+            case 'typing:indicator':
+              // Broadcast typing status
+              for (const user of connectedUsers.values()) {
+                if (user.id !== userId) {
                   try {
                     user.socket.send(JSON.stringify({
-                      type: 'message:new',
+                      type: 'typing:indicator',
                       data: {
-                        id: `msg_${Date.now()}`,
                         userId,
                         username,
-                        text: message.text,
-                        createdAt: new Date().toISOString()
+                        isTyping: message.isTyping
                       }
                     }));
                   } catch (e) {
                     // Socket might be closed
                   }
                 }
-                break;
+              }
+              break;
 
-              case 'typing:indicator':
-                // Broadcast typing status
-                for (const user of connectedUsers.values()) {
-                  if (user.id !== userId) {
-                    try {
-                      user.socket.send(JSON.stringify({
-                        type: 'typing:indicator',
-                        data: {
-                          userId,
-                          username,
-                          isTyping: message.isTyping
-                        }
-                      }));
-                    } catch (e) {
-                      // Socket might be closed
-                    }
+            case 'presence:update':
+              // Broadcast presence update
+              for (const user of connectedUsers.values()) {
+                if (user.id !== userId) {
+                  try {
+                    user.socket.send(JSON.stringify({
+                      type: 'presence:update',
+                      data: {
+                        userId,
+                        username,
+                        status: message.status
+                      }
+                    }));
+                  } catch (e) {
+                    // Socket might be closed
                   }
                 }
-                break;
+              }
+              break;
 
-              case 'presence:update':
-                // Broadcast presence update
-                for (const user of connectedUsers.values()) {
-                  if (user.id !== userId) {
-                    try {
-                      user.socket.send(JSON.stringify({
-                        type: 'presence:update',
-                        data: {
-                          userId,
-                          username,
-                          status: message.status
-                        }
-                      }));
-                    } catch (e) {
-                      // Socket might be closed
-                    }
-                  }
-                }
-                break;
-
-              default:
-                fastify.log.warn(`Unknown message type: ${message.type}`);
+            default:
+              fastify.log.warn(`Unknown message type: ${message.type}`);
             }
           } catch (e) {
             fastify.log.error(`Error parsing message: ${e}`);
