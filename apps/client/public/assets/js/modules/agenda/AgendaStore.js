@@ -7,7 +7,7 @@
 class AgendaStore {
   constructor() {
     this.storageKey = 'workspace_events';
-    this.apiUrl = (window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000') + '/api/agenda';
+    this.apiUrl = (window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000') + '/api';
     this.useApi = true; // TOUJOURS utiliser l'API du serveur Proxmox
     this.initializeStore();
   }
@@ -71,8 +71,9 @@ class AgendaStore {
     if (this.useApi) {
       try {
         const response = await fetch(`${this.apiUrl}/events?start=1900-01-01&end=2100-12-31`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        return data.success ? data.data : [];
+        return data.success ? (data.events || data.data || []) : [];
       } catch (error) {
         console.error('❌ Erreur récupération API:', error);
         return [];
@@ -92,8 +93,9 @@ class AgendaStore {
         const response = await fetch(
           `${this.apiUrl}/events?start=${startDate}&end=${endDate}`
         );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        return data.success ? data.data : [];
+        return data.success ? (data.events || data.data || []) : [];
       } catch (error) {
         console.error('❌ Erreur récupération API:', error);
         return [];
@@ -120,11 +122,12 @@ class AgendaStore {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(event)
         });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data.success) {
-          return data.data;
+          return data.event || data.data;
         } else {
-          throw new Error(data.message);
+          throw new Error(data.message || data.error);
         }
       } catch (error) {
         console.error('❌ Erreur création API:', error);
