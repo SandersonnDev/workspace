@@ -36,8 +36,12 @@ class ChatWebSocket {
      */
   connect() {
     try {
-      console.log(`🔗 Tentative de connexion à ${this.wsUrl}...`);
-      this.ws = new WebSocket(this.wsUrl);
+      // Ajouter le username en query param (requis par le serveur Proxmox)
+      const username = localStorage.getItem('workspace_username') || `Guest_${Math.random().toString(36).substr(2, 9)}`;
+      const wsUrlWithParams = `${this.wsUrl}?username=${encodeURIComponent(username)}`;
+      
+      console.log(`🔗 Tentative de connexion à ${wsUrlWithParams}...`);
+      this.ws = new WebSocket(wsUrlWithParams);
 
       this.ws.addEventListener('open', () => {
         console.log('✅ WebSocket connecté');
@@ -151,25 +155,36 @@ class ChatWebSocket {
      * Gérer les messages reçus
      */
   handleMessage(data) {
-    if (data.type === 'message') {
-      // Message de chat (compat) -> normaliser en newMessage avec payload direct
-      const payload = data.message || data;
+    console.log('📨 Message WebSocket reçu:', data.type);
+    
+    if (data.type === 'connected') {
+      // Bienvenue du serveur
+      console.log('✅ Connecté au serveur WebSocket:', data.userId, data.username);
+      return;
+    } else if (data.type === 'auth:ack') {
+      // Authentification OK
+      console.log('✅ Authentifié');
+      return;
+    } else if (data.type === 'message:new') {
+      // Nouveau message reçu
+      const payload = data.data || data;
       this.messageHandlers.forEach(handler => handler({
         type: 'newMessage',
         message: payload
       }));
-    } else if (data.type === 'history') {
-      // Historique au démarrage
-      this.messageHandlers.forEach(handler => handler({
-        type: 'history',
-        messages: data.messages
-      }));
-    } else if (data.type === 'newMessage') {
-      // Nouveau message (depuis le serveur via broadcast)
-      const payload = data.message || data;
+    } else if (data.type === 'message' || data.type === 'message:send') {
+      // Message de chat (anciens formats)
+      const payload = data.message || data.data || data;
       this.messageHandlers.forEach(handler => handler({
         type: 'newMessage',
         message: payload
+      }));
+    } else if (data.type === 'presence:update') {
+      // Changement de présence utilisateur
+      const payload = data.data || data;
+      this.messageHandlers.forEach(handler => handler({
+        type: 'presence:update',
+        user: payload
       }));
     } else if (data.type === 'userCount') {
       // Mise à jour du nombre d'utilisateurs
@@ -178,27 +193,27 @@ class ChatWebSocket {
         count: data.count,
         users: data.users
       }));
-    } else if (data.type === 'chatCleared') {
-      // Chat supprimé par quelqu'un
-      this.messageHandlers.forEach(handler => handler({
-        type: 'chatCleared',
-        clearedBy: data.clearedBy,
-        timestamp: data.timestamp
-      }));
     } else if (data.type === 'error') {
       // Erreur du serveur
       const msg = data.message || data.text || 'Erreur inconnue';
+      console.error('❌ Erreur serveur:', msg);
       this.errorHandlers.forEach(handler => handler(msg));
-    } else if (data.type === 'success') {
-      // Message de succès du serveur
-      console.log('✅ Succès serveur:', data.message || data.text);
+    } else if (data.type === 'ping') {
+      // Heartbeat - répondre avec pong
+      try {
+        this.ws.send(JSON.stringify({ type: 'pong' }));
+      } catch (err) {
+        console.warn('⚠️ Erreur réponse pong:', err);
+      }
+    } else {
+      console.log('📌 Message WebSocket non géré:', data.type, data);
     }
   }
 
   /**
-     * Envoyer un message
+     * Envoyer un message (type 'message:send' pour Proxmox)
      */
-  sendMessage(pseudo, message) {
+  sendMessage(message) {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.error('❌ WebSocket non connecté');
       return Promise.reject(new Error('WebSocket non connecté'));
@@ -206,12 +221,17 @@ class ChatWebSocket {
 
     return new Promise((resolve, reject) => {
       try {
-        this.ws.send(JSON.stringify({
-          type: 'message',
-          text: message
-        }));
+        const payload = {
+          type: 'message:send', // Type attendu par le serveur Proxmox
+          text: message,
+          timestamp: Date.now(),
+          username: localStorage.getItem('workspace_username') || 'Guest'
+        };
+        console.log('📤 Envoi message:', payload.type, message.substring(0, 50));
+        this.ws.send(JSON.stringify(payload));
         resolve();
       } catch (err) {
+        console.error('❌ Erreur envoi message:', err);
         reject(err);
       }
     });

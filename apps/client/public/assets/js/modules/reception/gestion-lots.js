@@ -66,7 +66,14 @@ export default class GestionLotsManager {
         
         const marquesData = await marquesRes.json();
         this.marques = (marquesData.items || marquesData.data || marquesData) || [];
-        console.log(`✅ Marques chargées: ${this.marques.length}`);
+        
+        // Assurer que chaque marque a un id
+        this.marques = this.marques.map(m => ({
+          id: m.id || m.ID || null,
+          name: m.name || m.NAME || 'Sans nom'
+        })).filter(m => m.id !== null);
+        
+        console.log(`✅ Marques chargées: ${this.marques.length}`, this.marques);
       } catch (error) {
         console.error('❌ Erreur chargement marques:', error.message);
         this.marques = [];
@@ -74,15 +81,16 @@ export default class GestionLotsManager {
 
       // Charger tous les modèles
       try {
-        // Essayer d'abord /api/marques/all
-        let modelesRes = await fetch(`${serverUrl}/api/modeles`, {
+        // Essayer d'abord /api/marques/all (l'endpoint correct)
+        let modelesRes = await fetch(`${serverUrl}/api/marques/all`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
         
-        // Fallback sur /api/marques/all si endpoint différent
+        // Fallback sur /api/modeles si endpoint alternatif
         if (!modelesRes.ok && modelesRes.status === 404) {
-          modelesRes = await fetch(`${serverUrl}/api/marques/all`, {
+          console.log('⚠️ /api/marques/all non trouvé, tentative /api/modeles');
+          modelesRes = await fetch(`${serverUrl}/api/modeles`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -94,7 +102,15 @@ export default class GestionLotsManager {
         
         const modelesData = await modelesRes.json();
         this.modeles = (modelesData.items || modelesData.data || modelesData) || [];
-        console.log(`✅ Modèles chargés: ${this.modeles.length}`);
+        
+        // Assurer que chaque modèle a un id et marque_id
+        this.modeles = this.modeles.map(m => ({
+          id: m.id || m.ID || null,
+          name: m.name || m.NAME || 'Sans nom',
+          marque_id: m.marque_id || m.MARQUE_ID || m.marqueId || null
+        })).filter(m => m.id !== null);
+        
+        console.log(`✅ Modèles chargés: ${this.modeles.length}`, this.modeles);
       } catch (error) {
         console.error('❌ Erreur chargement modèles:', error.message);
         this.modeles = [];
@@ -132,9 +148,13 @@ export default class GestionLotsManager {
       select.innerHTML = '<option value="">-- Sélectionner une marque --</option>';
       this.marques.forEach(marque => {
         const option = document.createElement('option');
-        option.value = marque.id;
+        // Assurer que la valeur est une chaîne numérique
+        const marqueId = marque.id ? String(marque.id) : '';
+        option.value = marqueId;
+        option.setAttribute('data-id', marqueId);
         option.textContent = marque.name;
         select.appendChild(option);
+        console.log(`✅ Option marque: value="${marqueId}" text="${marque.name}"`);
       });
       select.value = currentValue;
     });
@@ -609,34 +629,70 @@ export default class GestionLotsManager {
     const selectMarque = document.getElementById('select-marque-for-modele');
     const inputModele = document.getElementById('input-new-modele');
 
-    if (!selectMarque || !inputModele || !selectMarque.value || !inputModele.value.trim()) {
-      this.showNotification('Veuillez remplir tous les champs', 'error');
+    if (!selectMarque || !inputModele) {
+      console.error('❌ Éléments du formulaire manquants');
+      this.showNotification('Erreur: formulaire incomplet', 'error');
       return;
     }
 
-    const marqueId = parseInt(selectMarque.value);
-    const newModele = inputModele.value.trim();
+    const marqueValue = selectMarque.value?.trim();
+    const modeleValue = inputModele.value?.trim();
+
+    console.log('📍 Valeurs du formulaire:', { marqueValue, modeleValue });
+
+    if (!marqueValue || !modeleValue) {
+      this.showNotification('Veuillez sélectionner une marque et remplir le nom du modèle', 'error');
+      return;
+    }
+
+    // Parser la marqueId - attention au format
+    let marqueId = parseInt(marqueValue, 10); // Base 10 explicite
+    console.log('🔢 Marque avant parseInt:', marqueValue, '| Après parseInt:', marqueId);
+    
+    // Si le select a des attributs data-id, utiliser ça à la place
+    if (selectMarque.selectedOptions && selectMarque.selectedOptions[0]) {
+      const selectedOption = selectMarque.selectedOptions[0];
+      const dataId = selectedOption.getAttribute('data-id');
+      if (dataId) {
+        marqueId = parseInt(dataId, 10);
+        console.log('🔢 Utilisation data-id:', dataId, '→', marqueId);
+      }
+    }
+
+    if (isNaN(marqueId) || marqueId <= 0) {
+      console.error('❌ ID marque invalide:', { marqueValue, marqueId });
+      console.error('❌ Options disponibles dans le select:', 
+        Array.from(selectMarque.options).map(o => ({ value: o.value, text: o.text, dataId: o.getAttribute('data-id') }))
+      );
+      this.showNotification('Marque invalide sélectionnée', 'error');
+      return;
+    }
 
     try {
+      console.log(`📤 Envoi: marqueId=${marqueId}, modele=${modeleValue}`);
       // Appel API réel
       const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000'}/api/marques/${marqueId}/modeles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newModele })
+        body: JSON.stringify({ name: modeleValue })
       });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status}:`, errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
       // Ajouter à la liste locale
       this.modeles.push({
         id: data.id || this.modeles.length + 1,
-        name: newModele,
+        name: modeleValue,
         marque_id: marqueId
       });
 
-      this.showNotification(`Modèle "${newModele}" ajouté`, 'success');
+      this.showNotification(`Modèle "${modeleValue}" ajouté`, 'success');
       this.modalManager.close('modal-add-modele');
       inputModele.value = '';
       selectMarque.value = '';
@@ -644,7 +700,7 @@ export default class GestionLotsManager {
 
     } catch (error) {
       console.error('❌ Erreur ajout modèle:', error);
-      this.showNotification('Erreur lors de l\'ajout du modèle', 'error');
+      this.showNotification(`Erreur: ${error.message}`, 'error');
     }
   }
 
