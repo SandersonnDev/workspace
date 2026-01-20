@@ -71,11 +71,32 @@ class AgendaStore {
     if (this.useApi) {
       try {
         const response = await fetch(`${this.apiUrl}/events?start=1900-01-01&end=2100-12-31`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+          console.warn(`⚠️ HTTP ${response.status} getAllEvents`);
+          return [];
+        }
         const data = await response.json();
-        return data.success ? (data.events || data.data || []) : [];
+        
+        // Parser plusieurs formats possibles de réponse
+        let events = [];
+        if (Array.isArray(data)) {
+          // Le serveur retourne directement un array
+          events = data;
+        } else if (data.success) {
+          // Format {success: true, events: [...]}
+          events = data.events || data.data || [];
+        } else if (data.events) {
+          // Format {events: [...]}
+          events = data.events;
+        } else if (data.data) {
+          // Format {data: [...]}
+          events = data.data;
+        }
+        
+        console.log(`✅ getAllEvents: ${events.length} événements`);
+        return Array.isArray(events) ? events : [];
       } catch (error) {
-        console.error('❌ Erreur récupération API:', error);
+        console.error('❌ Erreur récupération API:', error.message);
         return [];
       }
     }
@@ -93,11 +114,32 @@ class AgendaStore {
         const response = await fetch(
           `${this.apiUrl}/events?start=${startDate}&end=${endDate}`
         );
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+          console.warn(`⚠️ HTTP ${response.status} getEventsByRange`);
+          return [];
+        }
         const data = await response.json();
-        return data.success ? (data.events || data.data || []) : [];
+        
+        // Parser plusieurs formats possibles de réponse
+        let events = [];
+        if (Array.isArray(data)) {
+          // Le serveur retourne directement un array
+          events = data;
+        } else if (data.success) {
+          // Format {success: true, events: [...]}
+          events = data.events || data.data || [];
+        } else if (data.events) {
+          // Format {events: [...]}
+          events = data.events;
+        } else if (data.data) {
+          // Format {data: [...]}
+          events = data.data;
+        }
+        
+        console.log(`✅ getEventsByRange ${startDate} to ${endDate}: ${events.length} événements`);
+        return Array.isArray(events) ? events : [];
       } catch (error) {
-        console.error('❌ Erreur récupération API:', error);
+        console.error('❌ Erreur récupération API:', error.message);
         return [];
       }
     }

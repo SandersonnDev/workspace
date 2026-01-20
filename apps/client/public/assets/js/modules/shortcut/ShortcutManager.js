@@ -598,6 +598,8 @@ export default class ShortcutManager {
         body: JSON.stringify({ name: name.trim() })
       });
 
+      console.log(`📊 Réponse catégorie: ${response.status} ${response.statusText}`);
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`❌ HTTP ${response.status}: ${errorText}`);
@@ -605,15 +607,28 @@ export default class ShortcutManager {
       }
 
       const data = await response.json();
+      console.log('📦 Données retournées:', data);
 
-      if (data.success) {
-        console.log('✅ Catégorie créée:', data.category);
+      // La catégorie peut être retournée directement ou dans plusieurs formats possibles
+      const success = data.success !== false && (data.category || data.data || data.id);
+      
+      if (success) {
+        console.log('✅ Catégorie créée:', data.category || data.data || data);
         await this.loadShortcuts();
         this.render();
-      } else {
-        console.error('❌ Erreur serveur:', data.message);
-        alert(data.message || 'Erreur lors de la création');
+        return;
       }
+      
+      // Si pas de success mais pas d'erreur explicite, c'est OK
+      if (response.status === 201 || response.status === 200) {
+        console.log('✅ Catégorie créée (status success)');
+        await this.loadShortcuts();
+        this.render();
+        return;
+      }
+      
+      console.error('❌ Erreur serveur:', data.message);
+      alert(data.message || 'Erreur lors de la création');
     } catch (error) {
       console.error('❌ Erreur création catégorie:', error);
       alert(`Erreur: ${error.message}`);

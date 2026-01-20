@@ -465,8 +465,8 @@ export default class GestionLotsManager {
         numero: index + 1,
         serialNumber: snInput.value,
         type: typeSelect.value,
-        marqueId: parseInt(marqueSelect.value),
-        modeleId: parseInt(modeleSelect.value),
+        marqueId: parseInt(marqueSelect.value, 10),
+        modeleId: parseInt(modeleSelect.value, 10),
         entryType,
         date: dateInput.value,
         time: timeInput.value
@@ -485,14 +485,23 @@ export default class GestionLotsManager {
       console.log('📤 Envoi des données au serveur:', { itemsCount: lotData.length, lotName });
       const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       
+      // Récupérer le JWT token
+      const token = localStorage.getItem('workspace_jwt');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('📌 Token JWT inclus');
+      } else {
+        console.warn('⚠️ Pas de token JWT');
+      }
+      
       const response = await fetch(`${serverUrl}/api/lots`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('workspace_jwt') || ''}`
-        },
+        headers: headers,
         body: JSON.stringify({ items: lotData, lotName })
       });
+
+      console.log(`📊 Réponse serveur: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -501,7 +510,9 @@ export default class GestionLotsManager {
       }
 
       const data = await response.json();
-      const lotId = data?.id || data?.lot_id;
+      console.log('📦 Données retournées:', data);
+      
+      const lotId = data?.id || data?.lot_id || data?.data?.id;
       
       if (!lotId) {
         console.warn('⚠️ Pas d\'ID retourné du serveur');
@@ -516,7 +527,10 @@ export default class GestionLotsManager {
           try {
             const pdfResponse = await fetch(`${serverUrl}/api/lots/${lotId}/pdf`, { 
               method: 'POST',
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('workspace_jwt') || ''}` }
+              headers: { 
+                ...headers,
+                'Authorization': `Bearer ${token}`
+              }
             });
             if (pdfResponse.ok) {
               console.log('✅ PDF généré');
@@ -593,6 +607,7 @@ export default class GestionLotsManager {
     const newMarque = input.value.trim();
 
     try {
+      console.log(`📤 Création marque: ${newMarque}`);
       // Appel API réel
       const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000'}/api/marques`, {
         method: 'POST',
@@ -600,13 +615,21 @@ export default class GestionLotsManager {
         body: JSON.stringify({ name: newMarque })
       });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      console.log(`📊 Réponse: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status}: ${errorText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
+      console.log('📦 Marque créée:', data);
 
-      // Ajouter à la liste locale
+      // Ajouter à la liste locale - assurer que l'ID est un nombre
+      const marqueId = data.id || data.ID || this.marques.length + 1;
       this.marques.push({
-        id: data.id || this.marques.length + 1,
+        id: parseInt(marqueId, 10),
         name: newMarque
       });
 
@@ -616,7 +639,7 @@ export default class GestionLotsManager {
       this.updateMarqueSelects();
     } catch (error) {
       console.error('❌ Erreur ajout marque:', error);
-      this.showNotification('Erreur lors de l\'ajout de la marque', 'error');
+      this.showNotification(`Erreur: ${error.message}`, 'error');
     }
   }
 
@@ -677,6 +700,8 @@ export default class GestionLotsManager {
         body: JSON.stringify({ name: modeleValue })
       });
 
+      console.log(`📊 Réponse: ${response.status} ${response.statusText}`);
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`❌ HTTP ${response.status}:`, errorText);
@@ -684,12 +709,14 @@ export default class GestionLotsManager {
       }
 
       const data = await response.json();
+      console.log('📦 Modèle créé:', data);
 
-      // Ajouter à la liste locale
+      // Ajouter à la liste locale - assurer que les IDs sont des nombres
+      const modeleId = data.id || data.ID || this.modeles.length + 1;
       this.modeles.push({
-        id: data.id || this.modeles.length + 1,
+        id: parseInt(modeleId, 10),
         name: modeleValue,
-        marque_id: marqueId
+        marque_id: parseInt(marqueId, 10)
       });
 
       this.showNotification(`Modèle "${modeleValue}" ajouté`, 'success');
