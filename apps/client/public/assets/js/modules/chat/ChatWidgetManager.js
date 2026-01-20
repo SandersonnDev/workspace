@@ -13,6 +13,9 @@ import ChatManager from './ChatManager.js';
 
 class ChatWidgetManager {
   constructor(options = {}) {
+    const appConfig = window.APP_CONFIG || {};
+    const defaultServer = 'http://192.168.1.62:4000';
+    const defaultWs = 'ws://192.168.1.62:4000/ws';
     // IDs des éléments
     this.wrapperElement = document.getElementById(options.wrapperId || 'chat-widget-wrapper');
     this.buttonElement = document.getElementById(options.buttonId || 'chat-widget-btn');
@@ -28,7 +31,8 @@ class ChatWidgetManager {
 
     // Initialiser ChatManager
     this.chatManager = new ChatManager({
-      serverUrl: options.serverUrl || 'http://localhost:8060',
+      serverUrl: options.serverUrl || appConfig.serverUrl || defaultServer,
+      wsUrl: options.wsUrl || appConfig.serverWsUrl || defaultWs,
       pseudoWrapperId: 'chat-widget-pseudo-area',
       pseudoDisplayId: 'chat-widget-pseudo-display',
       pseudoInputId: 'chat-widget-pseudo-input',

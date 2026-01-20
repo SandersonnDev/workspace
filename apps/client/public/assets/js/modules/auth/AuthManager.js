@@ -2,7 +2,7 @@ class AuthManager {
   constructor() {
     this.user = null;
     this.listeners = [];
-    this.serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+    this.serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
     this.tokenKey = 'workspace_jwt';
     this.init();
   }

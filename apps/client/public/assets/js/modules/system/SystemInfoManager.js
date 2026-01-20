@@ -11,7 +11,7 @@ export default class SystemInfoManager {
     this.serverElementId = config.serverElementId || 'footer-server-value';
     this.serverIconId = config.serverIconId || 'footer-server-icon';
     this.updateInterval = config.updateInterval || 5000; // 5 secondes par défaut
-    this.serverUrl = config.serverUrl || window.APP_CONFIG?.serverUrl || 'http://localhost:8060';
+    this.serverUrl = config.serverUrl || window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000';
     this.serverErrorCount = 0;
     this.healthEndpoint = `${this.serverUrl}/api/health`;
 

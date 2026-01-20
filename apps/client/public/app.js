@@ -526,6 +526,7 @@ class PageManager {
       ]).then(([chatModule, configModule]) => {
         const ChatManager = chatModule.default;
         const securityConfig = configModule.default;
+        const appConfig = window.APP_CONFIG || {};
 
         window.chatManager = new ChatManager({
           messagesContainerId: 'chat-messages',
@@ -537,7 +538,9 @@ class PageManager {
           pseudoErrorId: 'chat-pseudo-error',
           clearChatBtnId: 'chat-clear-btn',
           pseudoWrapperId: 'chat-pseudo-input-wrapper',
-          securityConfig: securityConfig
+          securityConfig: securityConfig,
+          serverUrl: appConfig.serverUrl,
+          wsUrl: appConfig.serverWsUrl
         });
       }).catch(error => {
         console.error('❌ Erreur import ChatManager:', error);

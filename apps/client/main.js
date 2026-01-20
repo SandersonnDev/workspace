@@ -127,7 +127,7 @@ async function discoverServer(port = 8060) {
             if (results[i].found) {
                 const foundIp = results[i].url.replace('http://', '').replace(`:${port}`, '');
                 console.log(`✅ Serveur trouvé sur ${foundIp}`);
-                return { url: results[i].url, ws: `ws://${foundIp}:${port}` };
+                return { url: results[i].url, ws: `ws://${foundIp}:${port}/ws` };
             }
         }
     }
@@ -140,12 +140,12 @@ async function discoverServer(port = 8060) {
 const serverConfig = {
     mode: 'proxmox',
     local: {
-        url: 'http://localhost:8060',
-        ws: 'ws://localhost:8060'
+        url: 'http://192.168.1.62:4000',
+        ws: 'ws://192.168.1.62:4000/ws'
     },
     proxmox: {
         url: 'http://192.168.1.62:4000',
-        ws: 'ws://192.168.1.62:4000'
+        ws: 'ws://192.168.1.62:4000/ws'
     },
     production: {
         url: 'https://workspace.example.com',
@@ -154,12 +154,12 @@ const serverConfig = {
 };
 
 // Configuration initiale (fallback) - La vraie config vient du client web via ConnectionConfig.js
-const MODE = process.env.SERVER_MODE || serverConfig.mode || 'local';
-let currentConfig = serverConfig[MODE] || serverConfig.local;
+const MODE = process.env.SERVER_MODE || serverConfig.mode || 'proxmox';
+let currentConfig = serverConfig[MODE] || serverConfig.proxmox;
 
 // Utiliser la config locale par défaut
 if (!currentConfig || !currentConfig.url) {
-    currentConfig = { url: 'http://localhost:8060', ws: 'ws://localhost:8060' };
+    currentConfig = { url: 'http://192.168.1.62:4000', ws: 'ws://192.168.1.62:4000/ws' };
 }
 
 let SERVER_URL = currentConfig.url;

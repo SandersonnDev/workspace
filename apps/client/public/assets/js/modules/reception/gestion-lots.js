@@ -50,7 +50,7 @@ export default class GestionLotsManager {
      */
   async loadReferenceData() {
     try {
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
 
       // Charger les marques
       const marquesRes = await fetch(`${serverUrl}/api/marques`);
@@ -437,7 +437,7 @@ export default class GestionLotsManager {
 
     try {
       console.log('📤 Envoi des données:', { items: lotData, lotName });
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -532,7 +532,7 @@ export default class GestionLotsManager {
 
     try {
       // Appel API réel
-      const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://localhost:8060'}/api/marques`, {
+      const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000'}/api/marques`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newMarque })
@@ -577,7 +577,7 @@ export default class GestionLotsManager {
 
     try {
       // Appel API réel
-      const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://localhost:8060'}/api/marques/${marqueId}/modeles`, {
+      const response = await fetch(`${window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000'}/api/marques/${marqueId}/modeles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newModele })

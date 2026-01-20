@@ -11,14 +11,14 @@ class ConnectionConfig {
         this.serverConnected = false;
         this.discovered = false;
         this.config = {
-            mode: 'local', // 'local', 'proxmox', 'production', 'auto'
+            mode: 'proxmox', // 'local', 'proxmox', 'production', 'auto'
             local: {
-                url: 'http://localhost:8060',
-                ws: 'ws://localhost:8060'
+                url: 'http://192.168.1.62:4000',
+                ws: 'ws://192.168.1.62:4000/ws'
             },
             proxmox: {
                 url: 'http://192.168.1.62:4000',
-                ws: 'ws://192.168.1.62:4000',
+                ws: 'ws://192.168.1.62:4000/ws',
                 host: 'proxmox-ws.local'
             },
             production: {
@@ -51,7 +51,7 @@ class ConnectionConfig {
         }
 
         // Déterminer le mode
-        const mode = this.config.mode || 'local';
+        const mode = this.config.mode || 'proxmox';
         
         if (mode === 'auto') {
             console.log('🔍 Mode auto: tentative de découverte du serveur...');
@@ -63,7 +63,7 @@ class ConnectionConfig {
                 console.log(`✅ Serveur découvert: ${this.serverUrl}`);
                 return;
             }
-            console.warn('⚠️ Découverte échouée, utilisation de la config par défaut (localhost)');
+            console.warn('⚠️ Découverte échouée, utilisation de la config par défaut (proxmox)');
         }
 
         // Utiliser la config du mode spécifié
@@ -71,9 +71,9 @@ class ConnectionConfig {
             this.serverUrl = this.config[mode].url;
             this.serverWsUrl = this.config[mode].ws;
         } else {
-            // Fallback à localhost
-            this.serverUrl = 'http://localhost:8060';
-            this.serverWsUrl = 'ws://localhost:8060';
+            // Fallback à proxmox
+            this.serverUrl = 'http://192.168.1.62:4000';
+            this.serverWsUrl = 'ws://192.168.1.62:4000/ws';
         }
 
         console.log(`🔗 Configuration: Mode="${mode}", URL="${this.serverUrl}"`);
@@ -96,11 +96,11 @@ class ConnectionConfig {
     async discoverServer() {
         try {
             // Essayer une requête locale d'abord (plus rapide)
-            const health = await this.testServerHealth('http://localhost:8060');
+            const health = await this.testServerHealth('http://192.168.1.62:4000');
             if (health) {
                 return {
-                    url: 'http://localhost:8060',
-                    ws: 'ws://localhost:8060'
+                    url: 'http://192.168.1.62:4000',
+                    ws: 'ws://192.168.1.62:4000/ws'
                 };
             }
 
@@ -165,14 +165,14 @@ class ConnectionConfig {
      * Obtenir l'URL du serveur
      */
     getServerUrl() {
-        return this.serverUrl || 'http://localhost:8060';
+        return this.serverUrl || 'http://192.168.1.62:4000';
     }
 
     /**
      * Obtenir l'URL WebSocket
      */
     getServerWsUrl() {
-        return this.serverWsUrl || 'ws://localhost:8060';
+        return this.serverWsUrl || 'ws://192.168.1.62:4000/ws';
     }
 }
 

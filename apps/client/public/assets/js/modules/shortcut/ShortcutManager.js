@@ -3,7 +3,7 @@ export default class ShortcutManager {
     this.categories = [];
     this.searchQuery = '';
     this.listeners = [];
-    this.serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+    this.serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
   }
 
   async init() {

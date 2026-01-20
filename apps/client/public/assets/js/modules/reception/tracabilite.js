@@ -23,7 +23,7 @@ export default class TracabiliteManager {
      */
   async loadLots() {
     try {
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots?status=all`);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -178,7 +178,7 @@ export default class TracabiliteManager {
 
                 <div class="lot-card-actions">
                     ${lot.pdf_path ? `
-                        <a href="${(window.APP_CONFIG?.serverUrl || 'http://localhost:8060')}${lot.pdf_path}?v=${Date.now()}" target="_blank" class="btn-action btn-view">
+                        <a href="${(window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000')}${lot.pdf_path}?v=${Date.now()}" target="_blank" class="btn-action btn-view">
                             <i class="fa-solid fa-eye"></i> Voir le PDF
                         </a>
                         <button type="button" class="btn-action btn-download-pdf" data-lot-id="${lot.id}" data-pdf-path="${lot.pdf_path}">
@@ -243,7 +243,7 @@ export default class TracabiliteManager {
      */
   async downloadPDF(lotId, pdfPath) {
     try {
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const url = `${serverUrl}${pdfPath}?v=${Date.now()}`;
 
       // Créer un lien temporaire pour le téléchargement
@@ -273,7 +273,7 @@ export default class TracabiliteManager {
     try {
       this.showNotification('Génération du PDF...', 'info');
 
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots/${lotId}/pdf`, {
         method: 'POST'
       });
@@ -369,7 +369,7 @@ export default class TracabiliteManager {
 
       this.showNotification('Envoi en cours...', 'info');
 
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots/${this.currentEmailLotId}/email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

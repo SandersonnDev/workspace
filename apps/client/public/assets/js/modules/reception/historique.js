@@ -22,7 +22,7 @@ export default class HistoriqueManager {
      */
   async loadLots() {
     try {
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots?status=finished`);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -271,7 +271,7 @@ export default class HistoriqueManager {
     lot.lot_name = newName;
 
     // Faire un appel API pour sauvegarder
-    const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+    const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
     fetch(`${serverUrl}/api/lots/${this.currentEditingLotId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -308,7 +308,7 @@ export default class HistoriqueManager {
 
     try {
       // Faire un appel API pour sauvegarder
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots/${lotId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -391,7 +391,7 @@ export default class HistoriqueManager {
     const lot = this.lots.find(l => l.id == this.currentEditingLotId);
     if (!lot) return;
 
-    const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+    const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
     const updates = [];
 
     // Collecter les mises à jour à partir des selects et inputs

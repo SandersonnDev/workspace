@@ -23,7 +23,7 @@ export default class InventaireManager {
      */
   async loadLots() {
     try {
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots?status=active`);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -246,7 +246,7 @@ export default class InventaireManager {
         return;
       }
 
-      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://localhost:8060';
+      const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
       const response = await fetch(`${serverUrl}/api/lots/items/${this.currentEditingItemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
