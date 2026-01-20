@@ -582,27 +582,41 @@ export default class ShortcutManager {
       return;
     }
 
+    if (!name || name.trim() === '') {
+      alert('Le nom de la catégorie ne peut pas être vide');
+      return;
+    }
+
     try {
+      console.log('📤 Création catégorie:', name);
       const response = await fetch(`${this.serverUrl}/api/shortcuts/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name: name.trim() })
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status}: ${errorText}`);
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
       if (data.success) {
+        console.log('✅ Catégorie créée:', data.category);
         await this.loadShortcuts();
         this.render();
       } else {
-        alert(data.message);
+        console.error('❌ Erreur serveur:', data.message);
+        alert(data.message || 'Erreur lors de la création');
       }
     } catch (error) {
       console.error('❌ Erreur création catégorie:', error);
-      alert('Erreur lors de la création de la catégorie');
+      alert(`Erreur: ${error.message}`);
     }
   }
 
@@ -612,10 +626,15 @@ export default class ShortcutManager {
     if (!token) return;
 
     try {
+      console.log('🗑️ Suppression catégorie:', categoryId);
       const response = await fetch(`${this.serverUrl}/api/shortcuts/categories/${categoryId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       const data = await response.json();
 

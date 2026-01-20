@@ -11,9 +11,12 @@ class ChatWebSocket {
     this.messageHandlers = [];
     this.errorHandlers = [];
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 3000;
+    this.maxReconnectAttempts = 10; // Augmenté de 5 à 10
+    this.baseReconnectDelay = 1000; // Délai de base pour exponential backoff
+    this.maxReconnectDelay = 30000; // Délai max 30s
     this.authToken = null;
+    this.reconnectTimeout = null;
+    this.heartbeatInterval = null;
 
     console.log('🔌 ChatWebSocket initialisé avec:', this.wsUrl);
     this.connect();
@@ -33,11 +36,13 @@ class ChatWebSocket {
      */
   connect() {
     try {
+      console.log(`🔗 Tentative de connexion à ${this.wsUrl}...`);
       this.ws = new WebSocket(this.wsUrl);
 
       this.ws.addEventListener('open', () => {
         console.log('✅ WebSocket connecté');
         this.reconnectAttempts = 0;
+        this.startHeartbeat();
         // Si on a déjà un token, l'envoyer pour authentifier
         if (this.authToken) {
           this.authenticate(this.authToken).catch(() => {});
@@ -53,8 +58,9 @@ class ChatWebSocket {
         }
       });
 
-      this.ws.addEventListener('close', () => {
-        console.warn('⚠️ WebSocket fermé, reconnexion...');
+      this.ws.addEventListener('close', (event) => {
+        console.warn(`⚠️ WebSocket fermé (code: ${event.code}), reconnexion dans ${this.getReconnectDelay()}ms...`);
+        this.stopHeartbeat();
         this.reconnect();
       });
 
@@ -63,9 +69,18 @@ class ChatWebSocket {
         this.errorHandlers.forEach(handler => handler(err));
       });
     } catch (err) {
-      console.error('❌ Erreur connexion WebSocket:', err);
+      console.error('❌ Erreur création WebSocket:', err);
       this.reconnect();
     }
+  }
+
+  /**
+     * Calculer le délai de reconnexion avec exponential backoff
+     */
+  getReconnectDelay() {
+    // Exponential backoff: délai = base * 2^tentatives (avec max)
+    const delay = this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+    return Math.min(delay, this.maxReconnectDelay);
   }
 
   /**
@@ -73,16 +88,49 @@ class ChatWebSocket {
      */
   reconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('❌ Impossible de se reconnecter');
+      console.error(`❌ Impossible de se reconnecter après ${this.maxReconnectAttempts} tentatives`);
+      this.errorHandlers.forEach(handler => handler('Reconnexion échouée'));
       return;
     }
 
     this.reconnectAttempts++;
-    console.log(`🔄 Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+    const delay = this.getReconnectDelay();
+    console.log(`🔄 Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts} dans ${delay}ms`);
 
-    setTimeout(() => {
+    // Annuler le timeout précédent s'il existe
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+    }
+
+    this.reconnectTimeout = setTimeout(() => {
       this.connect();
-    }, this.reconnectDelay);
+    }, delay);
+  }
+
+  /**
+     * Démarrer un heartbeat pour détecter les connexions mortes
+     */
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        try {
+          this.ws.send(JSON.stringify({ type: 'ping' }));
+        } catch (err) {
+          console.warn('⚠️ Erreur envoi heartbeat:', err);
+        }
+      }
+    }, 30000); // Ping toutes les 30s
+  }
+
+  /**
+     * Arrêter le heartbeat
+     */
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
   /**
@@ -216,6 +264,11 @@ class ChatWebSocket {
      * Fermer la connexion
      */
   close() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    this.stopHeartbeat();
     if (this.ws) {
       this.ws.close();
       this.ws = null;

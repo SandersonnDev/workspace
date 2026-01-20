@@ -7,18 +7,18 @@
 class AgendaStore {
   constructor() {
     this.storageKey = 'workspace_events';
-    this.apiUrl = '/api/agenda';
-    this.useApi = false; // Basculer à true quand serveur prêt
+    this.apiUrl = (window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000') + '/api/agenda';
+    this.useApi = true; // TOUJOURS utiliser l'API du serveur Proxmox
     this.initializeStore();
   }
 
   /**
-     * Initialiser le store avec des données de démo si vide
+     * Initialiser le store - NE PAS charger les données de démo
      */
   initializeStore() {
-    const stored = localStorage.getItem(this.storageKey);
-    if (!stored && !this.useApi) {
-      this.initializeDemoData();
+    // Ne pas charger de données de démo - utiliser uniquement l'API
+    if (this.useApi) {
+      console.log('✅ AgendaStore: Mode API activé, URL:', this.apiUrl);
     }
   }
 

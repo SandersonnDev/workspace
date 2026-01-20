@@ -46,54 +46,80 @@ export default class GestionLotsManager {
   }
 
   /**
-     * Charger les données de référence (marques, modèles) depuis l'API
+     * Charger les données de référence (marques, modèles) depuis l'API du serveur Proxmox
      */
   async loadReferenceData() {
     try {
       const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
+      console.log('🔗 Chargement données de référence depuis:', serverUrl);
 
       // Charger les marques
-      const marquesRes = await fetch(`${serverUrl}/api/marques`);
-      if (!marquesRes.ok) throw new Error('Erreur chargement marques');
-      const marquesData = await marquesRes.json();
-      this.marques = marquesData.items || [];
+      try {
+        const marquesRes = await fetch(`${serverUrl}/api/marques`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!marquesRes.ok) {
+          throw new Error(`HTTP ${marquesRes.status}: ${marquesRes.statusText}`);
+        }
+        
+        const marquesData = await marquesRes.json();
+        this.marques = (marquesData.items || marquesData.data || marquesData) || [];
+        console.log(`✅ Marques chargées: ${this.marques.length}`);
+      } catch (error) {
+        console.error('❌ Erreur chargement marques:', error.message);
+        this.marques = [];
+      }
 
       // Charger tous les modèles
-      const modelesRes = await fetch(`${serverUrl}/api/marques/all`);
-      if (!modelesRes.ok) {
-        // Endpoint alternatif si /all n'existe pas
-        throw new Error('Endpoint modèles non trouvé');
+      try {
+        // Essayer d'abord /api/marques/all
+        let modelesRes = await fetch(`${serverUrl}/api/modeles`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        // Fallback sur /api/marques/all si endpoint différent
+        if (!modelesRes.ok && modelesRes.status === 404) {
+          modelesRes = await fetch(`${serverUrl}/api/marques/all`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        
+        if (!modelesRes.ok) {
+          throw new Error(`HTTP ${modelesRes.status}: ${modelesRes.statusText}`);
+        }
+        
+        const modelesData = await modelesRes.json();
+        this.modeles = (modelesData.items || modelesData.data || modelesData) || [];
+        console.log(`✅ Modèles chargés: ${this.modeles.length}`);
+      } catch (error) {
+        console.error('❌ Erreur chargement modèles:', error.message);
+        this.modeles = [];
       }
-      const modelesData = await modelesRes.json();
-      this.modeles = modelesData.items || [];
 
       console.log('📦 Données chargées:', this.marques.length, 'marques', this.modeles.length, 'modèles');
 
       // Remplir les selects de marques
       this.updateMarqueSelects();
+      
+      // Afficher un avertissement si les données manquent
+      if (this.marques.length === 0 && this.modeles.length === 0) {
+        console.warn('⚠️ Aucune donnée chargée du serveur - vérifiez la connexion');
+      }
     } catch (error) {
-      console.error('❌ Erreur chargement données:', error);
-      // Charger données par défaut en cas d'erreur
-      this.loadDefaultData();
+      console.error('❌ Erreur critique lors du chargement des données:', error);
     }
   }
 
   /**
-     * Charger données par défaut (fallback)
+     * Charger données par défaut (fallback) - DÉSACTIVÉ
      */
   loadDefaultData() {
-    this.marques = [
-      { id: 1, name: 'Dell' },
-      { id: 2, name: 'HP' },
-      { id: 3, name: 'Lenovo' }
-    ];
-    this.modeles = [
-      { id: 1, name: 'Latitude 5410', marque_id: 1 },
-      { id: 2, name: 'ProBook 450', marque_id: 2 },
-      { id: 3, name: 'ThinkPad T14', marque_id: 3 }
-    ];
-    console.log('ℹ️ Données par défaut chargées');
-    this.updateMarqueSelects();
+    console.warn('⚠️ loadDefaultData() appelée - utiliser les données du serveur plutôt que les defaults');
+    // Ne pas charger les données par défaut - forcer l'erreur pour voir le problème
   }
 
   /**
@@ -419,8 +445,8 @@ export default class GestionLotsManager {
         numero: index + 1,
         serialNumber: snInput.value,
         type: typeSelect.value,
-        marqueId: marqueSelect.value,
-        modeleId: modeleSelect.value,
+        marqueId: parseInt(marqueSelect.value),
+        modeleId: parseInt(modeleSelect.value),
         entryType,
         date: dateInput.value,
         time: timeInput.value
@@ -436,46 +462,62 @@ export default class GestionLotsManager {
     const lotName = document.getElementById('input-lot-name')?.value?.trim() || null;
 
     try {
-      console.log('📤 Envoi des données:', { items: lotData, lotName });
+      console.log('📤 Envoi des données au serveur:', { itemsCount: lotData.length, lotName });
       const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
+      
       const response = await fetch(`${serverUrl}/api/lots`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('workspace_jwt') || ''}`
+        },
         body: JSON.stringify({ items: lotData, lotName })
       });
 
       if (!response.ok) {
-        const msg = `HTTP ${response.status}`;
-        throw new Error(msg);
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status}: ${errorText}`);
+        throw new Error(`Erreur serveur ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      const lotId = data?.id;
-      this.showNotification(`Lot #${lotId || ''} enregistré (${lotData.length} articles)`, 'success');
+      const lotId = data?.id || data?.lot_id;
+      
+      if (!lotId) {
+        console.warn('⚠️ Pas d\'ID retourné du serveur');
+        this.showNotification(`Lot enregistré (${lotData.length} articles) mais ID manquant`, 'warning');
+      } else {
+        this.showNotification(`Lot #${lotId} enregistré (${lotData.length} articles)`, 'success');
+      }
 
-      // Générer le PDF du lot
-      setTimeout(async () => {
-        try {
-          const pdfResponse = await fetch(`${serverUrl}/api/lots/${lotId}/pdf`, { method: 'POST' });
-          if (pdfResponse.ok) {
-            console.log('✅ PDF généré');
+      // Générer le PDF du lot si ID disponible
+      if (lotId) {
+        setTimeout(async () => {
+          try {
+            const pdfResponse = await fetch(`${serverUrl}/api/lots/${lotId}/pdf`, { 
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('workspace_jwt') || ''}` }
+            });
+            if (pdfResponse.ok) {
+              console.log('✅ PDF généré');
+            }
+          } catch (pdfError) {
+            console.warn('⚠️ Erreur génération PDF:', pdfError);
           }
-        } catch (pdfError) {
-          console.warn('⚠️ Erreur génération PDF:', pdfError);
+        }, 1000);
+      }
+
+      // Rediriger vers l'inventaire
+      setTimeout(() => {
+        // Utiliser le système de navigation interne
+        const receptionNav = document.querySelector('[data-page="inventaire"][data-reception-page="true"]');
+        if (receptionNav) {
+          receptionNav.click();
+          console.log('✅ Navigation vers Inventaire');
+        } else {
+          console.log('⚠️ Bouton inventaire non trouvé, redirection URL');
+          window.location.href = '/pages/reception.html?section=inventaire';
         }
-
-        // Rediriger vers l'inventaire
-        setTimeout(() => {
-          // Utiliser le système de navigation interne
-          const receptionNav = document.querySelector('[data-page="inventaire"][data-reception-page="true"]');
-          if (receptionNav) {
-            receptionNav.click();
-            console.log('✅ Navigation vers Inventaire');
-          } else {
-            console.log('⚠️ Bouton inventaire non trouvé, redirection URL');
-            window.location.href = '/pages/reception.html?section=inventaire';
-          }
-        }, 500);
       }, 500);
     } catch (error) {
       console.error('❌ Erreur sauvegarde:', error);
