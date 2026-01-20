@@ -67,7 +67,7 @@ export default class GestionLotsManager {
         const marquesData = await marquesRes.json();
         this.marques = (marquesData.items || marquesData.data || marquesData) || [];
         
-        // Assurer que chaque marque a un id
+        // Normaliser les marques - garder les IDs comme chaînes (ex: marque_1768917784262)
         this.marques = this.marques.map(m => ({
           id: m.id || m.ID || null,
           name: m.name || m.NAME || 'Sans nom'
@@ -103,7 +103,7 @@ export default class GestionLotsManager {
         const modelesData = await modelesRes.json();
         this.modeles = (modelesData.items || modelesData.data || modelesData) || [];
         
-        // Assurer que chaque modèle a un id et marque_id
+        // Normaliser les modèles - garder les IDs comme chaînes
         this.modeles = this.modeles.map(m => ({
           id: m.id || m.ID || null,
           name: m.name || m.NAME || 'Sans nom',
@@ -148,8 +148,8 @@ export default class GestionLotsManager {
       select.innerHTML = '<option value="">-- Sélectionner une marque --</option>';
       this.marques.forEach(marque => {
         const option = document.createElement('option');
-        // Assurer que la valeur est une chaîne numérique
-        const marqueId = marque.id ? String(marque.id) : '';
+        // Les IDs du serveur peuvent être des chaînes (ex: marque_1768917784262) donc pas de parseInt
+        const marqueId = String(marque.id);
         option.value = marqueId;
         option.setAttribute('data-id', marqueId);
         option.textContent = marque.name;
@@ -465,8 +465,8 @@ export default class GestionLotsManager {
         numero: index + 1,
         serialNumber: snInput.value,
         type: typeSelect.value,
-        marqueId: parseInt(marqueSelect.value, 10),
-        modeleId: parseInt(modeleSelect.value, 10),
+        marqueId: marqueSelect.value,  // Garder comme chaîne (ex: marque_1768917784262)
+        modeleId: modeleSelect.value,  // Garder comme chaîne
         entryType,
         date: dateInput.value,
         time: timeInput.value
@@ -626,10 +626,10 @@ export default class GestionLotsManager {
       const data = await response.json();
       console.log('📦 Marque créée:', data);
 
-      // Ajouter à la liste locale - assurer que l'ID est un nombre
-      const marqueId = data.id || data.ID || this.marques.length + 1;
+      // Ajouter à la liste locale - garder l'ID comme chaîne
+      const marqueId = data.id || data.ID;
       this.marques.push({
-        id: parseInt(marqueId, 10),
+        id: marqueId,  // Peut être marque_1768917784262
         name: newMarque
       });
 
@@ -668,21 +668,21 @@ export default class GestionLotsManager {
       return;
     }
 
-    // Parser la marqueId - attention au format
-    let marqueId = parseInt(marqueValue, 10); // Base 10 explicite
-    console.log('🔢 Marque avant parseInt:', marqueValue, '| Après parseInt:', marqueId);
+    // L'ID du serveur peut être une chaîne (ex: marque_1768917784262)
+    // donc on le garde directement sans parseInt
+    let marqueId = marqueValue;
     
     // Si le select a des attributs data-id, utiliser ça à la place
     if (selectMarque.selectedOptions && selectMarque.selectedOptions[0]) {
       const selectedOption = selectMarque.selectedOptions[0];
       const dataId = selectedOption.getAttribute('data-id');
       if (dataId) {
-        marqueId = parseInt(dataId, 10);
-        console.log('🔢 Utilisation data-id:', dataId, '→', marqueId);
+        marqueId = dataId;
+        console.log('🆔 Utilisation data-id:', dataId);
       }
     }
 
-    if (isNaN(marqueId) || marqueId <= 0) {
+    if (!marqueId) {
       console.error('❌ ID marque invalide:', { marqueValue, marqueId });
       console.error('❌ Options disponibles dans le select:', 
         Array.from(selectMarque.options).map(o => ({ value: o.value, text: o.text, dataId: o.getAttribute('data-id') }))
@@ -711,12 +711,11 @@ export default class GestionLotsManager {
       const data = await response.json();
       console.log('📦 Modèle créé:', data);
 
-      // Ajouter à la liste locale - assurer que les IDs sont des nombres
-      const modeleId = data.id || data.ID || this.modeles.length + 1;
+      // Ajouter à la liste locale
       this.modeles.push({
-        id: parseInt(modeleId, 10),
+        id: data.id || `modele_${Date.now()}`,
         name: modeleValue,
-        marque_id: parseInt(marqueId, 10)
+        marque_id: marqueId
       });
 
       this.showNotification(`Modèle "${modeleValue}" ajouté`, 'success');
