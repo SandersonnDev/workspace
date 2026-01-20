@@ -69,7 +69,7 @@ export default class GestionLotsManager {
         
         // Normaliser les marques - garder les IDs comme chaînes (ex: marque_1768917784262)
         this.marques = this.marques.map(m => ({
-          id: m.id || m.ID || null,
+          id: m.id || m.ID || null,  // Numérique depuis serveur PostgreSQL
           name: m.name || m.NAME || 'Sans nom'
         })).filter(m => m.id !== null);
         
@@ -105,7 +105,7 @@ export default class GestionLotsManager {
         
         // Normaliser les modèles - garder les IDs comme chaînes
         this.modeles = this.modeles.map(m => ({
-          id: m.id || m.ID || null,
+          id: m.id || m.ID || null,  // Numérique depuis serveur PostgreSQL
           name: m.name || m.NAME || 'Sans nom',
           marque_id: m.marque_id || m.MARQUE_ID || m.marqueId || null
         })).filter(m => m.id !== null);
