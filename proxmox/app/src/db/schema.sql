@@ -1,0 +1,187 @@
+-- PostgreSQL Schema for Workspace Application
+-- Phase 2: Database Migration
+
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  last_login TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Marques table (Brands for reception materials) - CREATE EARLY for references
+CREATE TABLE IF NOT EXISTS marques (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_marques_name ON marques(name);
+
+-- Modeles table (Models for reception materials) - CREATE EARLY for references
+CREATE TABLE IF NOT EXISTS modeles (
+  id SERIAL PRIMARY KEY,
+  marque_id INTEGER NOT NULL REFERENCES marques(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_modeles_marque_id ON modeles(marque_id);
+CREATE INDEX IF NOT EXISTS idx_modeles_name ON modeles(name);
+
+-- Messages table
+CREATE TABLE IF NOT EXISTS messages (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  username VARCHAR(255) NOT NULL,
+  text TEXT NOT NULL,
+  conversation_id VARCHAR(255),
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_is_read ON messages(is_read);
+
+-- Events table (Agenda)
+CREATE TABLE IF NOT EXISTS events (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
+  location VARCHAR(255),
+  attendees TEXT[], -- Array of user IDs or emails
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  deleted_at TIMESTAMP -- Soft delete
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
+CREATE INDEX IF NOT EXISTS idx_events_start_time ON events(start_time);
+CREATE INDEX IF NOT EXISTS idx_events_end_time ON events(end_time);
+CREATE INDEX IF NOT EXISTS idx_events_deleted_at ON events(deleted_at) WHERE deleted_at IS NULL;
+
+-- Activity Logs table
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(255) NOT NULL,
+  details TEXT,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user_id ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_action ON activity_logs(action);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_metadata ON activity_logs USING gin(metadata);
+
+-- Shortcuts table
+CREATE TABLE IF NOT EXISTS shortcuts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  icon VARCHAR(100),
+  url TEXT,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shortcuts_user_id ON shortcuts(user_id);
+CREATE INDEX IF NOT EXISTS idx_shortcuts_order_index ON shortcuts(order_index);
+
+-- Lots table (Réception)
+CREATE TABLE IF NOT EXISTS lots (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  name VARCHAR(255),
+  status VARCHAR(50) NOT NULL DEFAULT 'received',
+  item_count INTEGER NOT NULL,
+  description TEXT,
+  received_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_lots_user_id ON lots(user_id);
+CREATE INDEX IF NOT EXISTS idx_lots_status ON lots(status);
+CREATE INDEX IF NOT EXISTS idx_lots_received_at ON lots(received_at DESC);
+
+-- Lot items table (Individual items in a lot)
+CREATE TABLE IF NOT EXISTS lot_items (
+  id SERIAL PRIMARY KEY,
+  lot_id INTEGER NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
+  serial_number VARCHAR(255),
+  type VARCHAR(100),
+  marque_id INTEGER REFERENCES marques(id) ON DELETE SET NULL,
+  modele_id INTEGER REFERENCES modeles(id) ON DELETE SET NULL,
+  entry_type VARCHAR(50) DEFAULT 'manual',
+  entry_date DATE,
+  entry_time TIME,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_lot_items_lot_id ON lot_items(lot_id);
+CREATE INDEX IF NOT EXISTS idx_lot_items_serial_number ON lot_items(serial_number);
+CREATE INDEX IF NOT EXISTS idx_lot_items_marque_id ON lot_items(marque_id);
+CREATE INDEX IF NOT EXISTS idx_lot_items_modele_id ON lot_items(modele_id);
+
+-- Sessions table (for JWT/session management)
+CREATE TABLE IF NOT EXISTS sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  token VARCHAR(500) NOT NULL,
+  refresh_token VARCHAR(500),
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+
+INSERT INTO users (username, password_hash, email) 
+VALUES (
+  'admin', 
+  '$2a$10$8K1p/a0dL3LzMzX8K9F4OeKwZ8k6HYdYvYr5pXpjxB8qY5n5FLT8q',
+  'admin@workspace.local'
+) ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO users (username, password_hash, email) 
+VALUES (
+  'admin', 
+  '$2a$10$8K1p/a0dL3LzMzX8K9F4OeKwZ8k6HYdYvYr5pXpjxB8qY5n5FLT8q',
+  'admin@workspace.local'
+) ON CONFLICT (username) DO NOTHING;
+
+-- =====================================================
+-- Migrations pour déploiements existants (idempotent)
+-- =====================================================
+ALTER TABLE IF EXISTS lots
+  ADD COLUMN IF NOT EXISTS name VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'received',
+  ADD COLUMN IF NOT EXISTS item_count INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS received_at TIMESTAMP DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+
+ALTER TABLE IF EXISTS lot_items
+  ALTER COLUMN serial_number DROP NOT NULL;
