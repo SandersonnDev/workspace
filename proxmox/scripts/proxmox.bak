@@ -418,7 +418,7 @@ cmd_logs() {
     info "Live logs (Ctrl+C to stop)"
     journalctl -u "$SERVICE_NAME" -f
   else
-    journalctl -u "$SERVICE_NAME" -n 100 --no-pager
+    journalctl -u "$SERVICE_NAME" -n 100 -o cat --no-pager
   fi
 }
 
