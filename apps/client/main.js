@@ -166,7 +166,7 @@ let SERVER_URL = currentConfig.url;
 let SERVER_WS_URL = currentConfig.ws;
 let SERVER_HEALTH_ENDPOINT = `${SERVER_URL}/api/health`;
 const MAX_RETRY_ATTEMPTS = 10;
-const RETRY_INTERVAL = 500;
+const RETRY_INTERVAL = 3000;
 
 let mainWindow;
 let pdfWindows = new Map();
