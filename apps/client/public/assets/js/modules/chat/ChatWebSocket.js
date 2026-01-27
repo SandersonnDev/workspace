@@ -7,6 +7,7 @@ class ChatWebSocket {
   constructor(options = {}) {
     // Utiliser l'URL WebSocket depuis APP_CONFIG si disponible
     this.wsUrl = options.wsUrl || (window.APP_CONFIG && window.APP_CONFIG.serverWsUrl) || this.getWebSocketUrl();
+    this.username = options.username || null;
     this.ws = null;
     this.messageHandlers = [];
     this.errorHandlers = [];
@@ -37,7 +38,7 @@ class ChatWebSocket {
   connect() {
     try {
       // Ajouter le username en query param (requis par le serveur Proxmox)
-      const username = localStorage.getItem('workspace_username') || `Guest_${Math.random().toString(36).substr(2, 9)}`;
+      const username = this.username || `Guest_${Math.random().toString(36).substr(2, 9)}`;
       const wsUrlWithParams = `${this.wsUrl}?username=${encodeURIComponent(username)}`;
       
       console.log(`🔗 Tentative de connexion à ${wsUrlWithParams}...`);
@@ -225,7 +226,7 @@ class ChatWebSocket {
           type: 'message:send', // Type attendu par le serveur Proxmox
           text: message,
           timestamp: Date.now(),
-          username: localStorage.getItem('workspace_username') || 'Guest'
+          username: this.username || 'Guest'
         };
         console.log('📤 Envoi message:', payload.type, message.substring(0, 50));
         this.ws.send(JSON.stringify(payload));
