@@ -283,6 +283,10 @@ class ChatManager {
       }
 
       await this.webSocket.sendMessage(text);
+      // Forcer le rafraîchissement de l'historique après envoi
+      if (typeof this.refreshHistory === 'function') {
+        await this.refreshHistory();
+      }
       input.value = '';
     } catch (error) {
       console.error('❌ Erreur envoi message:', error);

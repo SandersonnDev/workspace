@@ -262,7 +262,7 @@ export default class InventaireManager {
 
       this.modalManager.close('modal-edit-pc');
 
-      // Recharger les lots
+      // Recharger les lots (toujours après modification)
       await this.loadLots();
 
       // Afficher une seule notification en fonction du résultat

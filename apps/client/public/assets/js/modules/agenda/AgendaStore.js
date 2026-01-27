@@ -167,6 +167,8 @@ class AgendaStore {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data.success) {
+          // Rafraîchir la liste après ajout
+          await this.getAllEvents(true);
           return data.event || data.data;
         } else {
           throw new Error(data.message || data.error);
@@ -201,6 +203,8 @@ class AgendaStore {
         });
         const data = await response.json();
         if (data.success) {
+          // Rafraîchir la liste après modification
+          await this.getAllEvents(true);
           return data.data;
         } else {
           throw new Error(data.message);
@@ -236,6 +240,8 @@ class AgendaStore {
         });
         const data = await response.json();
         if (data.success) {
+          // Rafraîchir la liste après suppression
+          await this.getAllEvents(true);
           return true;
         } else {
           throw new Error(data.message);

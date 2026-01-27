@@ -284,7 +284,7 @@ export default class TracabiliteManager {
       this.showNotification('PDF généré avec succès', 'success');
 
       // Recharger les lots
-      await this.loadLots();
+      await this.loadLots(); // Toujours rafraîchir après action
     } catch (error) {
       console.error('❌ Erreur génération PDF:', error);
       this.showNotification('Erreur lors de la génération du PDF', 'error');

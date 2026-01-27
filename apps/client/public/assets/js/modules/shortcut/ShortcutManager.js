@@ -875,29 +875,30 @@ export default class ShortcutManager {
       console.log('🔄 Envoi reorder request:', { categoryId, shortcutIds, serverUrl: this.serverUrl });
       const response = await fetch(`${this.serverUrl}/api/shortcuts/reorder`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ category_id: categoryId, shortcut_ids: shortcutIds })
-      });
+        try {
+          console.log('🔄 Envoi reorder request:', { categoryId, shortcutIds, serverUrl: this.serverUrl });
+          const response = await fetch(`${this.serverUrl}/api/shortcuts/reorder`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ category_id: categoryId, shortcut_ids: shortcutIds })
+          });
 
-      console.log('📥 Réponse reorder:', { status: response.status, statusText: response.statusText });
-      const data = await response.json();
-      console.log('📦 Data reorder:', data);
+          const data = await response.json();
 
-      if (data.success) {
-        await this.loadShortcuts();
-        this.render();
-      }
-    } catch (error) {
-      console.error('❌ Erreur réorganisation raccourcis:', error);
-    }
-  }
+          // Toujours rafraîchir la liste après modification
+          await this.loadShortcuts();
+          this.render();
 
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
+          if (!data.success) {
+            alert(data.message || 'Erreur lors du réordonnancement');
+          }
+        } catch (error) {
+          console.error('❌ Erreur réordonnancement:', error);
+          alert('Erreur lors du réordonnancement des raccourcis');
+        }
     return div.innerHTML;
   }
 }
