@@ -31,10 +31,11 @@ class ChatManager {
     const defaultWs = 'ws://192.168.1.62:4000/ws';
     const serverUrl = options.serverUrl || appConfig.serverUrl || defaultServer;
     const wsUrl = options.wsUrl || appConfig.serverWsUrl || defaultWs;
-    this.webSocket = new ChatWebSocket({ wsUrl });
+    this.pseudo = this.loadPseudo();
+    this.webSocket = new ChatWebSocket({ wsUrl, username: this.pseudo });
 
     // État
-    this.pseudo = this.loadPseudo();
+    // this.pseudo déjà initialisé ci-dessus
     this.messages = [];
     this.userCount = 0;
     this.connectedUsers = [];
@@ -202,8 +203,9 @@ class ChatManager {
      * Charger le pseudo depuis la session utilisateur
      */
   loadPseudo() {
-    const username = localStorage.getItem('workspace_username');
-    return username || null;
+    // À remplacer par la récupération du pseudo depuis la session utilisateur (ex: via un store global ou variable d'état)
+    // Ici, on suppose que le pseudo est passé via l'événement 'auth-change' ou lors de l'initialisation
+    return null;
   }
 
   /**
@@ -217,26 +219,8 @@ class ChatManager {
      * Confirmer le pseudo (non utilisé, username vient de la session)
      */
   confirmPseudo() {
-    const username = localStorage.getItem('workspace_username');
-    if (!username) {
-      console.warn('⚠️ Aucun utilisateur connecté');
-      return;
-    }
-
-    this.savePseudo(username);
-
-    if (this.webSocket.isConnected()) {
-      this.webSocket.setPseudo(username).catch(err => {
-        console.error('❌ Erreur lors de l\'envoi du pseudo:', err);
-      });
-    }
-
-    this.messages.forEach(msg => {
-      msg.own = msg.pseudo === this.pseudo;
-    });
-
-    this.displayPseudo();
-    this.renderMessages();
+    // Cette méthode n'est plus utile si le pseudo vient toujours de la session utilisateur
+    // On peut la désactiver ou la laisser vide
   }
 
   /**
