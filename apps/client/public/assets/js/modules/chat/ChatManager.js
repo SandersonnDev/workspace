@@ -298,7 +298,7 @@ class ChatManager {
         return;
       }
 
-      await this.webSocket.sendMessage(this.pseudo, text);
+      await this.webSocket.sendMessage(text);
       input.value = '';
     } catch (error) {
       console.error('❌ Erreur envoi message:', error);
