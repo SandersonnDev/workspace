@@ -48,8 +48,10 @@ export default class ShortcutManager {
   }
 
   destroy() {
-    this.listeners.forEach(({ element, event, handler }) => {
-      element?.removeEventListener(event, handler);
+    this.listeners.forEach(function(listener) {
+      if (listener && listener.element) {
+        listener.element.removeEventListener(listener.event, listener.handler);
+      }
     });
     this.listeners = [];
     document.removeEventListener('keydown', this.globalKeyHandler);
@@ -121,7 +123,7 @@ export default class ShortcutManager {
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
         const searchInput = document.getElementById('shortcut-search-input');
-        searchInput?.focus();
+        if (searchInput) searchInput.focus();
       }
     };
     document.addEventListener('keydown', this.globalKeyHandler);
@@ -147,13 +149,17 @@ export default class ShortcutManager {
   filterCategories() {
     if (!this.searchQuery) return this.categories;
 
-    return this.categories.map(cat => ({
-      ...cat,
-      shortcuts: cat.shortcuts.filter(shortcut =>
-        shortcut.name.toLowerCase().includes(this.searchQuery) ||
-                shortcut.url.toLowerCase().includes(this.searchQuery)
-      )
-    })).filter(cat => cat.shortcuts.length > 0);
+    const query = this.searchQuery;
+    return this.categories.map(function(cat) {
+      return {
+        id: cat.id,
+        name: cat.name,
+        shortcuts: cat.shortcuts.filter(function(shortcut) {
+          return shortcut.name.toLowerCase().includes(query) ||
+                 shortcut.url.toLowerCase().includes(query);
+        })
+      };
+    }).filter(function(cat) { return cat.shortcuts.length > 0; });
   }
 
   render() {
@@ -236,10 +242,10 @@ export default class ShortcutManager {
           window.recentItemsManager.display();
         } else if (url) {
           // Try Electron API first
-          if (window.electronAPI?.openExternal) {
+          if (window.electronAPI && window.electronAPI.openExternal) {
             console.log('🌐 Ouverture raccourci:', url);
             window.electronAPI.openExternal(url);
-          } else if (window.electron?.openExternal) {
+          } else if (window.electron && window.electron.openExternal) {
             window.electron.openExternal(url);
           } else if (typeof window.ipcRenderer !== 'undefined' && window.ipcRenderer.invoke) {
             window.ipcRenderer.invoke('open-external', url);
@@ -498,7 +504,7 @@ export default class ShortcutManager {
     });
 
     shortcutsList.addEventListener('dragend', (e) => {
-      draggedElement?.classList.remove('dragging');
+      if (draggedElement) draggedElement.classList.remove('dragging');
       draggedElement = null;
     });
 
@@ -531,7 +537,7 @@ export default class ShortcutManager {
       // Sauvegarder l'ordre si quelque chose a changé
       if (hasReordered) {
         console.log('💾 Sauvegarde de l\'ordre avant fermeture');
-        const items = [...shortcutsList.querySelectorAll('.shortcut-item')];
+        const items = Array.from(shortcutsList.querySelectorAll('.shortcut-item'));
         const shortcutIds = items.map(item => parseInt(item.dataset.shortcutId));
         await this.reorderShortcuts(categoryId, shortcutIds);
       }
@@ -544,7 +550,7 @@ export default class ShortcutManager {
   }
 
   getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.shortcut-item:not(.dragging)')];
+    const draggableElements = Array.from(container.querySelectorAll('.shortcut-item:not(.dragging)'));
 
     return draggableElements.reduce((closest, child) => {
       const box = child.getBoundingClientRect();

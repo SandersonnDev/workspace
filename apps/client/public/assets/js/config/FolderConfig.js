@@ -9,7 +9,7 @@ export const folderConfig = {
     team: {
       basePath: '/mnt/team/#TEAM/',
       // Blacklist spécifique à ce preset (vide = utilise la globale)
-      blacklist: ['#TRAÇABALITÉ', '#INTERNE', '#INVITES']
+      blacklist: ['#TRAÇABALITÉ', '#INTERNE', '#INVITES', '#COMMANDES','#TRAÇABILITÉ']
     },
     guest: {
       basePath: '/mnt/team/#TEAM/#INVITES'

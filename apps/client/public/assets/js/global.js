@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialiser ChatWidgetManager (widget flottant)
   try {
-    const serverUrl = window.APP_CONFIG?.serverUrl || 'http://192.168.1.62:4000';
-    const wsUrl = window.APP_CONFIG?.serverWsUrl || 'ws://192.168.1.62:4000/ws';
+    const serverUrl = (window.APP_CONFIG && window.APP_CONFIG.serverUrl) || 'http://192.168.1.62:4000';
+    const wsUrl = (window.APP_CONFIG && window.APP_CONFIG.serverWsUrl) || 'ws://192.168.1.62:4000/ws';
     window.chatWidgetManager = new ChatWidgetManager({
       wrapperId: 'chat-widget-wrapper',
       buttonId: 'chat-widget-btn',

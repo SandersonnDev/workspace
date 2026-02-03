@@ -21,8 +21,10 @@ export default class ModalManager {
   }
 
   destroy() {
-    this.listeners.forEach(({ element, event, handler }) => {
-      element?.removeEventListener(event, handler);
+    this.listeners.forEach(function(listener) {
+      if (listener && listener.element) {
+        listener.element.removeEventListener(listener.event, listener.handler);
+      }
     });
     this.listeners = [];
   }
