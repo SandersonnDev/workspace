@@ -752,7 +752,7 @@ export default class TracabiliteManager {
     openEmailModal(lotId) {
         this.currentEmailLotId = lotId;
         this.currentEmailSessionId = null;
-        document.getElementById('email-recipient').value = 'michel@wanadoo.fr';
+        document.getElementById('email-recipient').value = 'clech.michel@wanadoo.fr';
         document.getElementById('email-message').value = '';
         this.modalManager.open('modal-send-email');
     }
